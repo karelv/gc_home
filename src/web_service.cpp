@@ -16,7 +16,7 @@ using namespace qindesign::network; // ethernet/MQTT/webserver
 
 
 extern LittleFS_Program g_little_fs;
-extern StaticJsonDocument<4096> g_json;
+extern JsonDocument g_json;
 
 // Keeps track of state for a single client.
 struct ClientState {
@@ -156,7 +156,7 @@ void handle_GET_api_json(EthernetClient &client, const char *what, const char *p
   if (!strcmp(what, on_relays_str))
   {
     handled = true;
-    JsonArray on_relays = g_json.createNestedArray(on_relays_str);
+    JsonArray on_relays = g_json[on_relays_str].to<JsonArray>();
     for (uint8_t rel = 0; rel<128; rel++)
     {
       if (rel_get_state(rel))
@@ -167,7 +167,7 @@ void handle_GET_api_json(EthernetClient &client, const char *what, const char *p
   } else if (!strcmp(what, on_pushbuttons_str))
   {
     handled = true;
-    JsonArray on_pushbuttons = g_json.createNestedArray(on_pushbuttons_str);
+    JsonArray on_pushbuttons = g_json[on_pushbuttons_str].to<JsonArray>();
     for (uint8_t but = 0; but<64; but++)
     {
       if (pushbutton_get_state(but))

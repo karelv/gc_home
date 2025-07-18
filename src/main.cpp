@@ -58,7 +58,7 @@ using namespace qindesign::network; // ethernet/MQTT/webserver
 LittleFS_Program g_little_fs;
 
 // JSON document
-StaticJsonDocument<4096> g_json;
+JsonDocument g_json; 
 char g_buffer[2048];
 
 

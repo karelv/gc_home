@@ -22,7 +22,7 @@ const int CHIP_SELECT = BUILTIN_SDCARD;
 
 bool g_sd_is_connected;
 extern LittleFS_Program g_little_fs;
-extern StaticJsonDocument<4096> g_json;
+extern JsonDocument g_json;
 extern char g_buffer[2048];
 extern uint8_t g_use_power_meter;
 extern uint8_t g_use_ac_power_detector;

@@ -116,11 +116,11 @@ static time_t rtc_get_local()
 }
 
 
-void Repeats(const void *data) {
+void print_clock(const void *data) 
+{
   char buffer[128];
   rtc15_now_str(buffer);
-  Serial.printf("15s: rtc15_now_str: %s --> '%s'\n", buffer, (const char *)data);
-  // Serial.println("15 second timer");
+  Serial.printf("now: %s --> '%s'\n", buffer, (const char *)data);
 }
 
 #define PIN_SPECIAL_BUTTON 4
@@ -225,22 +225,14 @@ setup()
 
   
   ntp_begin();
+  // rtc15_set_active_timezone(rtc_CE); // set the timezone to Belgium
   ntp_app_begin();
-
-  int64_t compile_time = rtc15_to_sec(rtc15_local_epoch_compile_time());
-  int64_t now = rtc15_to_sec(rtc15_get());
-  Serial.printf("compile age: %lld\n", (now - compile_time));
-
-  // // if ((now - compile_time) < 3600) // only first hour after compile time...
-  // // {
-  // //   Serial.printf("New ntp_request...\n");
-  // //   ntp_request(rtc15_get()<<17);
-  // // }
-
+  //ntp_app_trigger_synch(); // no trigger, 
+  // it will be triggered by the cron job automatically
+  // also there is a backup battery, so the RTC is not lost
 
   // store_connect_links();
   // copy_file_to_SD("connect_links.bin");
-
 
   Serial.println("Setting up cron alarms...");
 
@@ -258,7 +250,7 @@ setup()
 
 
   // create timers, to trigger relative to when they're created
-  Cron.create("*/15 * * * * *", Repeats, false, (void *)"<<15 sec timer>>");           // timer for every 15 seconds
+  Cron.create("*/15 * * * * *", print_clock, false, (void *)"<<15 sec timer>>");           // timer for every 15 seconds
   Serial.println("Ending cron setup...");
   
 
@@ -303,23 +295,16 @@ loop()
   {
     elapsedMicros em = 0; 
     static uint8_t special_button_state = 0;
-    // Serial.printf("SPECIAL: %d -- %d\n", digitalRead(PIN_SPECIAL_BUTTON), special_button_state);
     if (digitalRead(PIN_SPECIAL_BUTTON) == 0)
     {
-      // Serial.printf("SPECIAL: PRESSED %d\n", special_button_state);
       if (special_button_state == 0)
       {
         Serial.printf("SPECIAL Button pressed\n");
         ntp_app_trigger_synch();
-        IPAddress ip;
-        elapsedMicros em = 0;
-        bool ret = DNSClient::getHostByName("pool.ntp.org", ip, 0);
-        Serial.printf("DNS: %d -> %d.%d.%d.%d -- %d us\n", ret, ip[0], ip[1], ip[2], ip[3], uint32_t(em));
         special_button_state = 1;
       }
     } else
     {
-      // Serial.printf("SPECIAL: RELEASED %d\n", special_button_state);
       if (special_button_state != 0)
       {
         Serial.printf("SPECIAL Button released\n");
@@ -327,13 +312,12 @@ loop()
       }
 
     }
-  //delay(100);
     if (int32_t(em) > 100)
     {
       Serial.printf("special button: %d us\n", int32_t(em));
     }    
   }
-  { // todo: NTP
+  {
     elapsedMicros em = 0; 
     ntp_app_loop();
     if (int32_t(em) > 100)

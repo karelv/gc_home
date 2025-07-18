@@ -23,6 +23,7 @@ struct NTPData
   uint32_t transmit_t_sec_;
   uint32_t transmit_t_frac_;
 };
+using NTPServerCallback = void (*)(bool success);
 
 void ntp_bytes2data(NTPData &data, const uint8_t *bytes);
 void ntp_data2bytes(uint8_t *bytes, const NTPData &data);
@@ -34,6 +35,8 @@ uint8_t ntp_begin();
 uint8_t ntp_request(uint64_t epoch);
 uint8_t ntp_parse_answer(int64_t &offset_31, int64_t &delay_31, uint64_t t4_epoch);
 uint8_t ntp_server_url(const char *url = NULL);
+
+void ntp_set_server_cb(NTPServerCallback cb);
 
 void ntp_print(NTPData &ntp_data);
 

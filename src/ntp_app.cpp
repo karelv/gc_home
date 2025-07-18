@@ -74,10 +74,24 @@ bool ntp_app_LED(void *)
 }
 
 
+void dns_cb(bool success)
+{
+  if (success)
+  {
+    Serial.printf("NTP: DNS lookup succeeded...\n");
+    g_ntp_state = NTP_STATE_SYNCHING;
+  } else
+  {
+    Serial.printf("NTP: DNS lookup failed...waiting for retry...\n");    
+  }
+}
+
+
 void ntp_app_begin()
 {
   pinMode(PIN_LED_NTP, OUTPUT);
   digitalWrite(PIN_LED_NTP, 0);
+  ntp_set_server_cb(dns_cb);
 }
 
 
@@ -88,20 +102,19 @@ void ntp_app_loop()
   if (g_ntp_state == NTP_STATE_START)
   {
     g_ntp_state = NTP_STATE_DNS;
-    last_ms = millis() - 1100;
     ntp_begin();
+    ntp_server_url();
+    last_ms = millis();
     return;
   }
   if (g_ntp_state == NTP_STATE_DNS)
-  {
-    if ((millis() - last_ms) > 1000)
-    {
-      uint8_t ret = ntp_server_url();
+  { // the DNS lookup is in progress...
+    // the callback function will change the state to NTP_STATE_SYNCHING
+    if ((millis() - last_ms) > 5000)
+    { // when longer than 5 second, then we assume that DNS is not working...
+      // and we start again.
+      g_ntp_state = NTP_STATE_START;
       last_ms = millis();
-      if (ret)
-      {
-        g_ntp_state = NTP_STATE_SYNCHING;
-      }      
     }
     return;
   }

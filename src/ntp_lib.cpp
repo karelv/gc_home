@@ -19,6 +19,7 @@ constexpr uint32_t NTP_BREAK_TIME = 2'085'978'496;
 // UDP port.
 EthernetUDP udp;
 IPAddress g_ntp_server_ip;
+NTPServerCallback g_ntp_lib_server_cb = nullptr;
 
 
 uint8_t
@@ -27,27 +28,65 @@ ntp_begin()
   // Start UDP listening on the NTP port
   Serial.printf("udp.begin(NTP_PORT);\n");
   udp.begin(NTP_PORT);
-  if ((g_ntp_server_ip[0] == 0) &&
-      (g_ntp_server_ip[1] == 0) &&
-      (g_ntp_server_ip[2] == 0) &&
-      (g_ntp_server_ip[3] == 0))
-  {    
-    Serial.printf("getHostByName...\n");
-    DNSClient::getHostByName(NTP_SERVER_URL, g_ntp_server_ip, 1000);
-  }
-  Serial.printf("udp.begin(NTP_PORT); end\n");
   return 0;
+}
+
+
+void
+ntp_server_url_cb(const ip_addr_t *ip)
+{
+  if (ip == nullptr)
+  {
+    Serial.printf("NTP: DNS lookup failed...\n");
+    if (g_ntp_lib_server_cb != nullptr)
+    {
+      g_ntp_lib_server_cb(false);
+    }
+    return;
+  }
+  if (ip->addr == 0)
+  {
+    Serial.printf("NTP: DNS lookup failed, returned zero address...\n");
+    if (g_ntp_lib_server_cb != nullptr)
+    {
+      g_ntp_lib_server_cb(false);
+    }
+    return;
+  }
+  g_ntp_server_ip[0] = ip4_addr_get_byte_val(*ip, 0);
+  g_ntp_server_ip[1] = ip4_addr_get_byte_val(*ip, 1);
+  g_ntp_server_ip[2] = ip4_addr_get_byte_val(*ip, 2);
+  g_ntp_server_ip[3] = ip4_addr_get_byte_val(*ip, 3);
+
+  Serial.printf("NTP: DNS lookup succeeded, server IP is %d.%d.%d.%d\n",
+                g_ntp_server_ip[0], g_ntp_server_ip[1],
+                g_ntp_server_ip[2], g_ntp_server_ip[3]);
+
+  if (g_ntp_lib_server_cb != nullptr)
+  {
+    g_ntp_lib_server_cb(true);
+  }
+}
+
+
+void ntp_set_server_cb(NTPServerCallback cb)
+{
+  g_ntp_lib_server_cb = cb;
 }
 
 
 uint8_t 
 ntp_server_url(const char *url)
 {
+  g_ntp_server_ip[0] = 0;
+  g_ntp_server_ip[1] = 0;
+  g_ntp_server_ip[2] = 0;
+  g_ntp_server_ip[3] = 0;
   if (url == NULL)
   {
-    return DNSClient::getHostByName(NTP_SERVER_URL, g_ntp_server_ip, 0);
+    return DNSClient::getHostByName(NTP_SERVER_URL, ntp_server_url_cb, 1000);
   }
-  return DNSClient::getHostByName(url, g_ntp_server_ip, 0);
+  return DNSClient::getHostByName(url, ntp_server_url_cb, 1000);
 }
 
 
@@ -241,18 +280,15 @@ ntp_request(uint64_t epoch)
       (g_ntp_server_ip[2] == 0) &&
       (g_ntp_server_ip[3] == 0))
   {
-    Serial.printf("udp.send(NTP_SERVER_URL ('%s')...\n", NTP_SERVER_URL);
-    if (!udp.send(NTP_SERVER_URL, NTP_PORT, buffer, 48)) {
-      return -1;
-    }
+    Serial.printf("NTP: g_ntp_server_ip is not set...\n");
+    return -1;
   } else
   {
-    Serial.printf("udp.send(g_ntp_server_ip (%d.%d.%d.%d)...\n", g_ntp_server_ip[0], g_ntp_server_ip[1], g_ntp_server_ip[2], g_ntp_server_ip[3]);
+    Serial.printf("NTP: udp.send(g_ntp_server_ip (%d.%d.%d.%d)...\n", g_ntp_server_ip[0], g_ntp_server_ip[1], g_ntp_server_ip[2], g_ntp_server_ip[3]);
     if (!udp.send(g_ntp_server_ip, NTP_PORT, buffer, 48)) {
       return -1;
     }    
-  }
-  
+  }  
   return 0;
 }
 

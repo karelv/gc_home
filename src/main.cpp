@@ -46,7 +46,7 @@
 #include "teensy_rtc15.h"
 #include "CronAlarms.h"
 
-#include <pubsubclient.h> // MQTT client library
+#include <PubSubClient.h> // MQTT client library
 
 
 using namespace qindesign::network; // ethernet/MQTT/webserver

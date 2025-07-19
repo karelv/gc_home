@@ -132,8 +132,8 @@ setup()
   power_begin();
   Serial.begin(1000000);
   unsigned long serial_start = millis();
-  while (!Serial && (millis() - serial_start < 4000)) {
-    delay(10); // Wait up to 4 seconds for Serial host to connect
+  while (!Serial && (millis() - serial_start < 10000)) {
+    delay(10); // Wait up to 10 seconds for Serial host to connect
   }
   Serial.println("Home automation starting...");
 
@@ -164,7 +164,7 @@ setup()
 
   g_timer_ms.every(5'001, mqtt_reconnect_handler); // every 5 sec check for reconnect to MQTT
 
-  //g_timer_ms.every(5'002, handle_reconnect_sd); // every 5 sec check for reconnect to SD
+  // g_timer_ms.every(5'002, handle_reconnect_sd); // every 5 sec check for reconnect to SD
   g_timer_ms.every(20'002, print_datetime); // every 2 sec print the time
   //g_timer_ms.every(120'000, ntp_app_timer);  // every 2 minutes
   g_timer_ms.every(1000, ntp_app_timer);  // every 2 minutes
@@ -195,20 +195,23 @@ setup()
     print_directory(root, 0);
     root.close();
   }
+  sd_card_print_files();
 
   // todo: only copy SD/www when a button is pressed! (and also when no 'www' directory is available on little FS)
   // todo: move it before reading the configuration files; but only when we read the button is pressed @ start up.  
-  // if (builtin_sd_card_begin())
-  // {
-  //   // read SD card 'www' directory and copy all files from it.
-  //   Serial.println("copy 'www' from SD card...");      
-  //   g_little_fs.mkdir("/www");
-  //   File www = SD.open("/www");
-  //   copy_directory_to_little_fs(www, "/www");
-  //   www.close();
+  if (builtin_sd_card_begin())
+  {
+    // read SD card 'www' directory and copy all files from it.
+    Serial.println("copy 'www' from SD card...");
+    g_little_fs.mkdir("/www");
+    File www = SD.open("/www");
+    copy_directory_to_little_fs(www, "/www");
+    www.close();
 
-  //   copy_file_to_little_fs("config.json");
-  // }
+    Serial.println("copy 'config.json' and 'connect_links.bin' from SD card...");
+    copy_file_to_little_fs("config.json");
+    copy_file_to_SD("connect_links.bin");
+  }
 
   Serial.printf("Init ethernet/MQTT/Webserer\n");
 

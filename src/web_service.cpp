@@ -97,7 +97,6 @@ void handle_GET_file(EthernetClient &client, const char *file)
     File dataFile = g_little_fs.open(buffer, FILE_READ);
     if (dataFile) 
     {
-      uint32_t stop, start = micros();
       Serial.println("reading from g_little_fs");
       client.write("HTTP/1.1 200 OK\r\n"
                     "Connection: close\r\n"
@@ -109,23 +108,14 @@ void handle_GET_file(EthernetClient &client, const char *file)
       client.write("\r\n"
                     "\r\n"
                     );
-      uint32_t counter = 100;
       while (dataFile.available()) 
       {
         client.write(dataFile.read());
-        counter++;
-        if ((counter % 4096) == 0)
+        while (client.availableForWrite() < 128)
         {
           client.flush();
-        }
-        if ((counter % 256) == 0)
-        {
-          stop = micros();        
-          if ((stop-start) > 2000) // every 2 ms call yield...
-          {
-            start = stop;
-            yield();
-          }
+          Ethernet.loop();
+          delay (1);
         }
       }
       dataFile.close();

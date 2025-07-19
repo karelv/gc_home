@@ -42,8 +42,9 @@ void print_directory(File dir, int numSpaces)
        break;
      }
      yield();
+
      print_spaces(numSpaces);
-     Serial.print(entry.name());
+     Serial.printf("'%s'", entry.name());
      if (entry.isDirectory()) {
        Serial.println("/");
        print_directory(entry, numSpaces+2);
@@ -175,7 +176,7 @@ void copy_file_to_SD(const char *filename)
   }
   yield();
   File dest = SD.open(filename, FILE_WRITE);
-  
+
   uint32_t counter = 0;
   while (src.available())
   {
@@ -194,4 +195,3 @@ void copy_file_to_SD(const char *filename)
   dest.close();
   src.close();
 }
-

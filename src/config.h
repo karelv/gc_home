@@ -10,4 +10,7 @@ void store_relay_states();
 void read_and_restore_relay_states(); 
 void read_config_json();
 
+
+void sd_card_print_files();
+
 #endif // __CONFIG_H__

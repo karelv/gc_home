@@ -318,3 +318,25 @@ void read_config_json()
   }
   g_use_ac_power_detector = true;
 }
+
+
+#include "utils.h"
+
+void sd_card_print_files()
+{
+  Serial.println("SD card print files");
+  if (builtin_sd_card_present())
+  {
+    Serial.println("SD card present");
+    if (SD.begin(CHIP_SELECT))
+    {
+      Serial.println("SD card initialized");
+      Serial.printf("SD FS: used %llu / total %llu bytes\n", SD.usedSize(), SD.totalSize());
+      {
+        File root = SD.open("/");
+        print_directory(root, 0);
+        root.close();
+      }
+    }
+  }
+}

@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en" class="has-navbar-fixed-top">
+<head>
+  <meta charset="latin1">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="keywords" content="karelv, home, automation, home-automation, teensy, robust, karelv"/>
+  <meta name="description" content="Home automation on Teensy with optional MQTT & web interface."/>
+  <title>Home automation</title>
+  <link rel="stylesheet" href="home-automation-bulma.min.css">
+  <link rel="icon" type="image/x-icon" href="assets/site/favicon.ico">
+</head>
+
+<body>
+<nav class="navbar is-fixed-top is-link" role="navigation" aria-label="main navigation">
+  <div class="navbar-brand">
+    <a class="navbar-item" href="https://karelv.github.io/home-automation" target="_blank">
+      <img src="assets/site/logo_white.png" height="28" alt="">
+    </a>
+
+    <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+    </a>
+  </div>
+  
+  <div id="navbarBasicExample" class="navbar-menu">
+    <div class="navbar-start">
+      <a id="tab_intro" class="navbar-item is-active">Introduction</a>
+      <a id="tab_home" class="navbar-item">Huis</a>
+      <a id="tab_config" class="navbar-item">Configuratie</a>
+      <a id="tab_analyses" class="navbar-item">Analyzes</a>
+    </div>
+
+    <div class="navbar-end">
+      <div class="navbar-item">
+        <div class="buttons">
+          <a id="site_version" title="Release" class="button is-info is-outlined is-small">V0.1.0</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div id="main">
+  <div id="tabs_main">
+    <div id="div_intro" class="content is-active">
+      <h2 id="introduction">Introduction</h2>
+<div class="is-text-light is-text-small">
+<p>by karelv</p>
+</div>
+    </div>
+
+    <div id="div_home" class="my_col col-12">
+      <div id="home_tabs" class="tabs is-fullwidth is-no-margin">
+        <ul>
+          <li id="tab_home_relays_buttons" class="is-active"><a>Relays & Buttons</a></li>
+          <li id="tab_home_kamer"><a>Kamer</a></li>
+          <li id="tab_home_floorplan"><a>Plattegrond</a></li>
+          <li id="tab_home_pcb_view"><a>PCB overzicht</a></li>
+          <li id="tab_home_timers"><a>Timers</a></li>
+        </ul>
+      </div>
+
+      <div id="div_home_relays_buttons" class="tab_content content is-no-margin">
+        <div class="columns">
+          <div class="column is-4" style="padding-bottom: 0px;">
+            <div id="relays_col1">
+
+            </div>
+          </div>
+          <div class="column is-4" style="padding-bottom: 0px;">
+            <div id="relays_col2">
+
+            </div>
+          </div>
+          <div class="column is-4" style="padding-bottom: 0px;">
+            <div id="buttons">
+
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <div id="div_home_kamer" class="tab_content content is-active is-no-margin">
+        <div class="columns">      
+          <div class="column is-9" style="padding-bottom: 0px;">
+          </div>
+
+          <div class="column is-3">
+          </div>
+        </div>
+      </div>
+
+      <div id="div_home_pcb_view" class="tab_content content is-active is-no-margin">
+        <div class="columns">
+          <div class="column is-9" style="padding-bottom: 0px;">
+          </div>
+
+          <div class="column is-3">
+          </div>
+        </div>
+      </div>
+
+      <div id="div_home_floorplan" class="tab_content content is-no-margin">
+        <div class="columns">
+          
+          <div class="column is-9" style="padding-bottom: 0px;">
+          </div>
+
+          <div class="column is-3">
+          </div>
+        </div>
+      </div>
+
+      <div id="div_home_timers" class="tab_content content is-active is-no-margin">
+        <div class="columns">
+          <div class="column is-9" style="padding-bottom: 0px;">
+          </div>
+
+          <div class="column is-3">
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div id="div_config" class="my_col col-12">
+      <div id="config_tabs" class="tabs is-fullwidth is-no-margin">
+        <ul>
+          <li id="tab_cfg_links" class="is-active"><a>Drukknop acties</a></li>
+          <li id="tab_cfg_names"><a>Names</a></li>
+          <li id="tab_cfg_logfile"><a>Log file</a></li>
+        </ul>
+      </div>
+
+      <div id="div_cfg_links" class="tab_content content is-no-margin">
+        <div class="columns">
+          <div class="column is-8" style="padding-bottom: 0px;">
+            <main id="log" style="left: 0px; width: 100%; height:100px;">
+              <section id="serial_terminal" style="height: 100%; overflow: auto;">
+              </section>
+            </main>
+            <input type="text" class="input is-primary" id="serial_send" name="serial_send" style="width:100%;margin-top: 5px;" placeholder="Enter here the command to sent and press <ENTER>" />
+          </div>
+          <div class="column is-4">
+
+          </div>
+        </div>
+      </div>
+
+      <div id="div_cfg_names" class="tab_content content is-active is-no-margin">
+        <div class="columns">
+          <div class="column is-9" style="padding-bottom: 0px;">
+          </div>
+
+          <div class="column is-3">
+          </div>
+        </div>
+      </div>
+
+      <div id="div_cfg_logfile" class="tab_content content is-no-margin">
+        <div class="columns">
+
+          <div class="column is-9" style="padding-bottom: 0px;">
+          </div>
+
+          <div class="column is-3">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="div_analyses" class="my_col col-12">
+      <h2 id="analyzes">Analyzes</h2>
+<p>Wel, dit is voor later!</p>
+    </div>
+
+
+  </div>
+</div>
+
+<div class="modal" id="error-popup">
+  <div class="modal-background"></div>
+  <div class="modal-card">
+    <header class="modal-card-head">
+      <p class="modal-card-title">Error</p>
+      <button class="delete keep" aria-label="close"></button>
+    </header>
+    <section class="modal-card-body">
+      <h1>MY CONTENT</h1>
+    </section>
+    <footer class="modal-card-foot">
+      <button class="button is-success keep">OK</button>
+    </footer>
+  </div>
+</div>
+
+<div class="template relay_row">
+  <div class="row relay">
+    <input id="rel_id" type="checkbox" name="relays" value="relay_XXX" class="checkmark">
+    <label for="rel_id">ASDF</label>
+  </div>
+</div>
+
+<div class="template button_row">
+  <div class="row pushbutton">
+    <input id="button_id" type="checkbox" name="buttons" value="button_XXX" disabled="disabled" class="checkmark">
+    <label for="button_id">ASDF</label>
+  </div>
+</div>
+
+</body>
+<script type="text/javascript" src="./assets/site/jquery-3.7.1.min.js"></script>
+<script type="text/javascript" src="./interface.min.js"></script>
+</html>

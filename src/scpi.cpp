@@ -416,33 +416,6 @@ void scpi_test_1w_txd(SCPI_Commands cmd, SCPI_Parameters params, Stream& interfa
 }
 
 
-void scpi_register_commands()
-{
-  scpi.RegisterCommand("TEST:DSMR:DATA_REQUEST", scpi_test_dsrm_data_request);
-  scpi.RegisterCommand("TEST:DSMR:DATA_INPUT", scpi_test_dsrm_data_input);
-  scpi.RegisterCommand("TEST:LEDS", scpi_test_leds);
-  scpi.RegisterCommand("TEST:BUTTON", scpi_test_button);
-  scpi.RegisterCommand("TEST:I2C1:IOEXPANDER", scpi_test_i2c1_ioexpander);
-  scpi.RegisterCommand("TEST:I2C1:SCAN", scpi_test_i2c1_scan);
-  scpi.RegisterCommand("TEST:I2C2:IOEXPANDER", scpi_test_i2c2_ioexpander);
-  scpi.RegisterCommand("TEST:I2C2:SCAN", scpi_test_i2c2_scan);
-  scpi.RegisterCommand("TEST:I2C3:IOEXPANDER", scpi_test_i2c3_ioexpander);
-  scpi.RegisterCommand("TEST:I2C3:SCAN", scpi_test_i2c3_scan);
-  scpi.RegisterCommand("TEST:PWM:INPUT", scpi_test_pwm_in);
-  scpi.RegisterCommand("TEST:PWM:OUTPUT", scpi_test_pwm_out);
-  scpi.RegisterCommand("TEST:AC_DETECTOR", scpi_test_ac_detector);
-  scpi.RegisterCommand("TEST:ENABLE_AC_POWER", scpi_test_enable_ac_power);
-  scpi.RegisterCommand("TEST:CAN:RXD", scpi_test_can_rxd);
-  scpi.RegisterCommand("TEST:CAN:TXD:DOM", scpi_test_can_txd_dom);
-  scpi.RegisterCommand("TEST:CAN:TXD:RES", scpi_test_can_txd_res);
-  scpi.RegisterCommand("TEST:LIN:CONTROL", scpi_test_lin_control);
-  scpi.RegisterCommand("TEST:LIN:RXD", scpi_test_lin_rxd);
-  scpi.RegisterCommand("TEST:LIN:TXD", scpi_test_lin_txd);
-  scpi.RegisterCommand("TEST:1W:TXD", scpi_test_1w_txd);
-  scpi.PrintDebugInfo(Serial); 
-}
-
-
 void scpi_handle_serial() 
 {
   static char buffer[64];
@@ -469,4 +442,31 @@ void scpi_handle_serial()
       Serial.println("Input too long, buffer cleared.");
     }
   }
+}
+
+
+void scpi_register_commands()
+{
+  scpi.RegisterCommand("TEST:DSMR:DATA_REQUEST", scpi_test_dsrm_data_request);
+  scpi.RegisterCommand("TEST:DSMR:DATA_INPUT", scpi_test_dsrm_data_input);
+  scpi.RegisterCommand("TEST:LEDS", scpi_test_leds);
+  scpi.RegisterCommand("TEST:BUTTON", scpi_test_button);
+  scpi.RegisterCommand("TEST:I2C1:IOEXPANDER", scpi_test_i2c1_ioexpander);
+  scpi.RegisterCommand("TEST:I2C1:SCAN", scpi_test_i2c1_scan);
+  scpi.RegisterCommand("TEST:I2C2:IOEXPANDER", scpi_test_i2c2_ioexpander);
+  scpi.RegisterCommand("TEST:I2C2:SCAN", scpi_test_i2c2_scan);
+  scpi.RegisterCommand("TEST:I2C3:IOEXPANDER", scpi_test_i2c3_ioexpander);
+  scpi.RegisterCommand("TEST:I2C3:SCAN", scpi_test_i2c3_scan);
+  scpi.RegisterCommand("TEST:PWM:INPUT", scpi_test_pwm_in);
+  scpi.RegisterCommand("TEST:PWM:OUTPUT", scpi_test_pwm_out);
+  scpi.RegisterCommand("TEST:AC_DETECTOR", scpi_test_ac_detector);
+  scpi.RegisterCommand("TEST:ENABLE_AC_POWER", scpi_test_enable_ac_power);
+  scpi.RegisterCommand("TEST:CAN:RXD", scpi_test_can_rxd);
+  scpi.RegisterCommand("TEST:CAN:TXD:DOM", scpi_test_can_txd_dom);
+  scpi.RegisterCommand("TEST:CAN:TXD:RES", scpi_test_can_txd_res);
+  scpi.RegisterCommand("TEST:LIN:CONTROL", scpi_test_lin_control);
+  scpi.RegisterCommand("TEST:LIN:RXD", scpi_test_lin_rxd);
+  scpi.RegisterCommand("TEST:LIN:TXD", scpi_test_lin_txd);
+  scpi.RegisterCommand("TEST:1W:TXD", scpi_test_1w_txd);
+  scpi.PrintDebugInfo(Serial);
 }

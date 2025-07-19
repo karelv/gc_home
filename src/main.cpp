@@ -143,10 +143,10 @@ setup()
   Wire1.begin();
   Wire1.setClock(clk);
 
-  clk = 400000;
-  Wire2.setClock(clk);
-  Wire2.begin();
-  Wire2.setClock(clk);
+  // clk = 400000;
+  // Wire2.setClock(clk);
+  // Wire2.begin();
+  // Wire2.setClock(clk);
   // by default the IO expanders are in disconnect state, let's connect them.
   io_expanders_reconnect_handler(NULL);
 
@@ -258,7 +258,7 @@ setup()
   scpi_register_commands();
 
   
-  uint8_t r = test.config(2, 0, "VDD", "SCL");
+  uint8_t r = test.config(1, 0, "GND", "GND");
 
   Serial.printf("I2CInput24V config: %02X\n", r);
 

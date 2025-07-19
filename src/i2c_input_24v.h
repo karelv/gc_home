@@ -1,9 +1,9 @@
 #ifndef I2C_INPUT_24V_H
 #define I2C_INPUT_24V_H
 
-#include "i2c_input.h"
+#include "i2c_io_board.h"
 
-class I2CInput24V : public I2CInput {
+class I2CInput24V : public I2C_IO_Board {
 public:
     I2CInput24V();
     ~I2CInput24V() override;

@@ -1,13 +1,13 @@
-#ifndef I2C_INPUT_H
-#define I2C_INPUT_H
+#ifndef I2C_IO_BOARD_H
+#define I2C_IO_BOARD_H
 
 #include <Wire.h>
 #include <stdint.h>
 
-class I2CInput {
+class I2C_IO_Board {
 public:
-    I2CInput() = default;
-    virtual ~I2CInput() = default;
+    I2C_IO_Board() = default;
+    virtual ~I2C_IO_Board() = default;
 
     virtual void setWire(TwoWire* wire) { wire_ = wire; }
     virtual void readInputs() = 0;
@@ -21,4 +21,4 @@ protected:
     TwoWire* wire_ = nullptr;
 };
 
-#endif // I2C_INPUT_H
+#endif // I2C_IO_BOARD_H

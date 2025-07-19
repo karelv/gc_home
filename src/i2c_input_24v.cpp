@@ -1,6 +1,6 @@
 #include "i2c_input_24v.h"
 
-I2CInput24V::I2CInput24V() : I2CInput()
+I2CInput24V::I2CInput24V() : I2C_IO_Board()
 {
 }
 

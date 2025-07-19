@@ -46,6 +46,7 @@
 #include "teensy_rtc15.h"
 #include "CronAlarms.h"
 #include "scpi.h"
+#include "i2c_input_24v.h"
 #include "pins.h"
 
 using namespace qindesign::network; // ethernet/MQTT/webserver
@@ -64,6 +65,7 @@ Timer<64, millis> g_timer_ms;
 // EventResponder: ==> add the timers to the yield function
 EventResponder g_event_responder;
 
+I2CInput24V test;
 
 void
 timer_responder(EventResponderRef event_responder)
@@ -140,6 +142,11 @@ setup()
   Wire1.setClock(clk);
   Wire1.begin();
   Wire1.setClock(clk);
+
+  clk = 400000;
+  Wire2.setClock(clk);
+  Wire2.begin();
+  Wire2.setClock(clk);
   // by default the IO expanders are in disconnect state, let's connect them.
   io_expanders_reconnect_handler(NULL);
 
@@ -250,6 +257,20 @@ setup()
 
   scpi_register_commands();
 
+  
+  uint8_t r = test.config(2, 0, "VDD", "SCL");
+
+  Serial.printf("I2CInput24V config: %02X\n", r);
+
+  for (uint8_t output = 0; output < 32; output+=1) 
+  {
+    if (output < 16) {
+      test.setOutput(output, 0);
+    } else {
+      test.setOutput(output, 1);
+    }
+  }
+  test.writeOutputs();
 
   Serial.printf("Init finished!\n");
 }
@@ -259,6 +280,18 @@ void
 loop()
 {
   unsigned long start_time = micros();
+
+  static unsigned long last_input_read = 0;
+  if (millis() - last_input_read >= 1000) {
+    last_input_read = millis();
+    test.readInputs();
+    Serial.print("Test inputs: ");
+    for (uint8_t input = 0; input < 32; input++) 
+    {
+        Serial.print(test.getInput(input));
+    }
+    Serial.println("");
+  }
 
   // Note:
   // core functionality is in yield (via EventResponder)

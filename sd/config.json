@@ -3,6 +3,52 @@
     "input": [96, 97, 112, 113, 98, 99, 114, 13],
     "output": [32, 33, 34, 35, 36, 37, 38, 39, 56, 57, 58, 59, 60, 61, 62, 11]
   },
+  "i2c_input_boards": [
+    {
+      "id": 1,
+      "type": "I2C-INPUT-24V",
+      "bus": 2,
+      "AD1": "VDD",
+      "AD2": "SCL"
+    },
+    {
+      "id": 2,
+      "type": "I2C-INPUT-24V",
+      "bus": 2,
+      "AD1": "GND",
+      "AD2": "GND"
+    }
+  ],
+  "i2c_output_boards": [
+    {
+      "id": 1,
+      "type": "I2C-Relay-patch-PCB",
+      "bus": 2,
+      "PCF": "PCF8574",
+      "AD2": 0
+    },
+    {
+      "id": 2,
+      "type": "I2C-Relay-patch-PCB",
+      "bus": 2,
+      "PCF": "PCF8574",
+      "AD2": 1
+    },
+    {
+      "id": 3,
+      "type": "I2C-Relay-patch-PCB",
+      "bus": 2,
+      "PCF": "PCF8574A",
+      "AD2": 0
+    },
+    {
+      "id": 4,
+      "type": "I2C-Relay-patch-PCB",
+      "bus": 2,
+      "PCF": "PCF8574A",
+      "AD2": 1
+    }
+  ],
   "use_AC_detector": 1,
   "use_power_meter": 0
 }

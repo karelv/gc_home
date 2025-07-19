@@ -10,7 +10,10 @@
 #include "pins.h"
 
 
-#define IOEXPANDER_ADDR2 0x20
+// I2C IO Expander address (example: PCF8574 default address: 0x20)
+#define IOEXPANDER_ADDR 0x20
+#define IOEXPANDER_ADDR2 0x62
+#define IOEXPANDER_ADDR3 0x20
 
 SCPI_Parser scpi;
 
@@ -68,8 +71,6 @@ void scpi_test_button(SCPI_Commands cmd, SCPI_Parameters params, Stream& interfa
   }
 }
 
-// I2C IO Expander address (example: PCF8574 default address)
-#define IOEXPANDER_ADDR 0x20
 void scpi_test_i2c1_ioexpander(SCPI_Commands cmd, SCPI_Parameters params, Stream& interface) {
   interface.println("Starting I2C1 IO Expander test");
   Wire.begin();
@@ -147,8 +148,6 @@ void scpi_test_i2c2_scan(SCPI_Commands cmd, SCPI_Parameters params, Stream& inte
   }
 }
 
-// I2C3 IO Expander address (example: PCF8574 default address)
-#define IOEXPANDER_ADDR3 0x20
 void scpi_test_i2c3_ioexpander(SCPI_Commands cmd, SCPI_Parameters params, Stream& interface) {
   interface.println("Starting I2C3 IO Expander test");
   Wire2.begin();

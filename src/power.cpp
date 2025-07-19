@@ -3,11 +3,7 @@
 #include "power.h"
 #include "relay_button.h"
 #include "config.h"
-
-
-#define PIN_AC_DETECTOR 27
-#define PIN_AC_DC_RELAY_BUTTON 1
-#define PIN_ENABLE_POWER 37
+#include "pins.h"
 
 void timer_cancel_all_tasks();
 

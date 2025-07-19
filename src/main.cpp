@@ -29,8 +29,8 @@
 #include <LittleFS.h>               // LittleFS 
 #include <ArduinoJson.h>            // JSON file format
 
-
-#include <qnethernet/QNDNSClient.h>             // ethernet/MQTT/webserver
+#include <qnethernet/QNDNSClient.h> // ethernet/MQTT/webserver
+#include <PubSubClient.h>           // MQTT client library
 
 #include "relay_button.h"
 #include "events.h"
@@ -45,23 +45,17 @@
 #include "ntp_app.h"
 #include "teensy_rtc15.h"
 #include "CronAlarms.h"
-
-#include <PubSubClient.h> // MQTT client library
-
+#include "scpi.h"
+#include "pins.h"
 
 using namespace qindesign::network; // ethernet/MQTT/webserver
-
-
-
 
 // Little FS
 LittleFS_Program g_little_fs;
 
 // JSON document
 JsonDocument g_json; 
-char g_buffer[2048];
-
-
+//char g_buffer[2048];
 
 // arduino-timer global variables declaration section
 Timer<8, micros> g_timer_us;
@@ -69,7 +63,6 @@ Timer<64, millis> g_timer_ms;
 
 // EventResponder: ==> add the timers to the yield function
 EventResponder g_event_responder;
-
 
 
 void
@@ -122,8 +115,6 @@ void print_clock(const void *data)
   rtc15_now_str(buffer);
   Serial.printf("now: %s --> '%s'\n", buffer, (const char *)data);
 }
-
-#define PIN_SPECIAL_BUTTON 4
 
 
 void
@@ -257,6 +248,9 @@ setup()
   Serial.println("Ending cron setup...");
   
 
+  scpi_register_commands();
+
+
   Serial.printf("Init finished!\n");
 }
 
@@ -279,7 +273,7 @@ loop()
       Serial.printf("g_timer_ms loop: %d us\n", int32_t(em));
     }    
   }
-  if (10) {
+  {
     elapsedMicros em = 0;     
     mqtt_loop();
     if (int32_t(em) > 100)
@@ -294,6 +288,14 @@ loop()
     {
       Serial.printf("handle_web_requests: %d us\n", int32_t(em));
     }    
+  }
+  {
+    elapsedMicros em = 0;
+    scpi_handle_serial();
+    if (int32_t(em) > 100)
+    {
+      Serial.printf("scpi_handle_serial: %d us\n", int32_t(em));
+    }
   }
   {
     elapsedMicros em = 0; 

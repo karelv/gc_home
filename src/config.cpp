@@ -23,7 +23,7 @@ const int CHIP_SELECT = BUILTIN_SDCARD;
 bool g_sd_is_connected;
 extern LittleFS_Program g_little_fs;
 extern JsonDocument g_json;
-extern char g_buffer[2048];
+char g_buffer[2048];
 extern uint8_t g_use_power_meter;
 extern uint8_t g_use_ac_power_detector;
 
@@ -300,6 +300,7 @@ void read_config_json()
       JsonArray slave_addresses_input = g_json["slave_addresses"]["input"];
       for (uint8_t i=0; i<slave_addresses_input.size(); i++)
       {
+        Serial.printf("config: slave_addresses_input[%d] = 0x%02X\n", i, int(slave_addresses_input[i]) & 0x7F);
         button_config_slave_addresses(i, int(slave_addresses_input[i]) & 0x7F);
       }
     }
@@ -308,15 +309,16 @@ void read_config_json()
       JsonArray slave_addresses_output = g_json["slave_addresses"]["output"];
       for (uint8_t i=0; i<slave_addresses_output.size(); i++)
       {
+        Serial.printf("config: slave_addresses_output[%d] = 0x%02X\n", i, int(slave_addresses_output[i]) & 0x7F);
         rel_config_slave_addresses(i, int(slave_addresses_output[i]) & 0x7F);
       }
     }
     {
       g_use_ac_power_detector = g_json["use_AC_detector"];
       g_use_power_meter = g_json["use_power_meter"];
+      Serial.printf("config: use_AC_detector = %d, use_power_meter = %d\n", g_use_ac_power_detector, g_use_power_meter);
     }
   }
-  g_use_ac_power_detector = true;
 }
 
 

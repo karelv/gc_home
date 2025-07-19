@@ -1,18 +1,15 @@
 #include "ntp_lib.h"
 #include "teensy_rtc15.h"
+#include "pins.h"
 
 #include <Arduino.h>
 #include <limits.h>
-
 
 #define NTP_STATE_IDLE 0
 #define NTP_STATE_START 1
 #define NTP_STATE_DNS 2
 #define NTP_STATE_SYNCHING 3
 #define NTP_STATE_SETTING 4
-
-
-#define PIN_LED_NTP 39
 
 uint8_t g_ntp_state = NTP_STATE_IDLE;
 uint8_t g_ntp_counter = 0;
@@ -50,22 +47,22 @@ bool ntp_app_LED(void *)
 {
   static uint8_t state;
   // pinMode(PIN_LED_NTP, OUTPUT);
-  // digitalWrite(PIN_LED_NTP, state % 2);    
+  // digitalWrite(PIN_LED_NTP, state % 2);
 
   uint32_t ntp_synch_age = (rtc15_get() - g_ntp_last_synch) >> 15;
   if (g_ntp_state != NTP_STATE_IDLE)
   { // display synch is running...
-    digitalWrite(PIN_LED_NTP, state % 2);    
+    digitalWrite(PIN_LED_WWW, state % 2);
   } else if (ntp_synch_age > (7*24*3600))
   { // last NTP synch is older than 7 days...
     if (state == 0)
     {
       Serial.printf("NTP STATUS: not synched in 7+ days\n");
     }
-    digitalWrite(PIN_LED_NTP, 0);
+    digitalWrite(PIN_LED_WWW, 0);
   } else 
   { // all ok; just blink once in a while
-    digitalWrite(PIN_LED_NTP, ((state % 10) == 0) ? 1 : 0);
+    digitalWrite(PIN_LED_WWW, ((state % 10) == 0) ? 1 : 0);
   }
 
   state++;
@@ -89,8 +86,8 @@ void dns_cb(bool success)
 
 void ntp_app_begin()
 {
-  pinMode(PIN_LED_NTP, OUTPUT);
-  digitalWrite(PIN_LED_NTP, 0);
+  pinMode(PIN_LED_WWW, OUTPUT);
+  digitalWrite(PIN_LED_WWW, 0);
   ntp_set_server_cb(dns_cb);
 }
 

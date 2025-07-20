@@ -148,25 +148,6 @@ setup()
   // Wire2.begin();
   // Wire2.setClock(clk);
   // by default the IO expanders are in disconnect state, let's connect them.
-  io_expanders_reconnect_handler(NULL);
-
-
-  Serial.println("Init the timers!");
-  g_timer_us.every(  100'000, heartbeat_led);  // every 100ms
-  g_timer_us.every(   10'000, handle_io_expanders); // every 10ms
-  g_timer_us.every(      950, detect_AC); // every 1ms
-  g_timer_us.every(   20'000, test_mqtt_reconnecting_timer_us);
-
-  // g_timer.every(10'231'124, handle_brownout_detector); // every 10.2... sec
-  //g_timer.every(5'004'123, io_expanders_reconnect_handler);
-
-  g_timer_ms.every(5'001, mqtt_reconnect_handler); // every 5 sec check for reconnect to MQTT
-
-  // g_timer_ms.every(5'002, handle_reconnect_sd); // every 5 sec check for reconnect to SD
-  g_timer_ms.every(20'002, print_datetime); // every 2 sec print the time
-  //g_timer_ms.every(120'000, ntp_app_timer);  // every 2 minutes
-  g_timer_ms.every(1000, ntp_app_timer);  // every 2 minutes
-  g_timer_ms.every(200, ntp_app_LED);  // every 200ms update the status
 
   Serial.println("Init the file system");
   if (!g_little_fs.begin(6*1024*1024))
@@ -180,36 +161,37 @@ setup()
   read_connect_links();
   rel_but_config_print();
 
+  io_expanders_reconnect_handler(NULL);
+
+  Serial.println("Init the timers!");
+  g_timer_us.every(  100'000, heartbeat_led);  // every 100ms
+  g_timer_us.every(   10'000, handle_io_expanders); // every 10ms
+  g_timer_us.every(      950, detect_AC); // every 1ms
+  g_timer_us.every(   20'000, test_mqtt_reconnecting_timer_us);
+
+  // g_timer.every(10'231'124, handle_brownout_detector); // every 10.2... sec
+
+  g_timer_ms.every(5'004, io_expanders_reconnect_handler);
+
+  g_timer_ms.every(5'001, mqtt_reconnect_handler); // every 5 sec check for reconnect to MQTT
+
+  // g_timer_ms.every(5'002, handle_reconnect_sd); // every 5 sec check for reconnect to SD
+  g_timer_ms.every(20'002, print_datetime); // every 2 sec print the time
+
+  //g_timer_ms.every(120'000, ntp_app_timer);  // every 2 minutes
+  g_timer_ms.every(1000, ntp_app_timer);  // every 2 minutes
+
+  g_timer_ms.every(200, ntp_app_LED);  // every 200ms update the status
+
+
   // once the timers are setup, we going to add the tick to the yield function using EventResponder
   g_event_responder.attach(&timer_responder);
   g_event_responder.triggerEvent();
 
   Serial.println("Core functions are life now!");
 
-  // show PROGRAM FS  
-  Serial.printf("little FS: used %llu / total %llu bytes\n", g_little_fs.usedSize(), g_little_fs.totalSize());
-  {
-    File root = g_little_fs.open("/"); 
-    print_directory(root, 0);
-    root.close();
-  }
-  sd_card_print_files();
-
   // todo: only copy SD/www when a button is pressed! (and also when no 'www' directory is available on little FS)
   // todo: move it before reading the configuration files; but only when we read the button is pressed @ start up.  
-  if (builtin_sd_card_begin())
-  {
-    // read SD card 'www' directory and copy all files from it.
-    Serial.println("copy 'www' from SD card...");
-    g_little_fs.mkdir("/www");
-    File www = SD.open("/www");
-    copy_directory_to_little_fs(www, "/www");
-    www.close();
-
-    Serial.println("copy 'config.json' and 'connect_links.bin' from SD card...");
-    copy_file_to_little_fs("config.json");
-    copy_file_to_SD("connect_links.bin");
-  }
 
   Serial.printf("Init ethernet/MQTT/Webserer\n");
 
@@ -254,24 +236,9 @@ setup()
   Cron.create("*/15 * * * * *", print_clock, false, (void *)"<<15 sec timer>>");           // timer for every 15 seconds
   Serial.println("Ending cron setup...");
   
-
+  Serial.println("SCPI commands registration...");
   scpi_register_commands();
-
   
-  uint8_t r = test.config(1, 0, "GND", "GND");
-
-  Serial.printf("I2CInput24V config: %02X\n", r);
-
-  for (uint8_t output = 0; output < 32; output+=1) 
-  {
-    if (output < 16) {
-      test.setOutput(output, 0);
-    } else {
-      test.setOutput(output, 1);
-    }
-  }
-  test.writeOutputs();
-
   Serial.printf("Init finished!\n");
 }
 
@@ -282,15 +249,8 @@ loop()
   unsigned long start_time = micros();
 
   static unsigned long last_input_read = 0;
-  if (millis() - last_input_read >= 1000) {
+  if (millis() - last_input_read >= 10000) {
     last_input_read = millis();
-    test.readInputs();
-    Serial.print("Test inputs: ");
-    for (uint8_t input = 0; input < 32; input++) 
-    {
-        Serial.print(test.getInput(input));
-    }
-    Serial.println("");
   }
 
   // Note:
@@ -301,7 +261,7 @@ loop()
   { // todo: timer ms
     elapsedMicros em = 0; 
     g_timer_ms.tick();
-    if (int32_t(em) > 100)
+    if (int32_t(em) > 1000)
     {
       Serial.printf("g_timer_ms loop: %d us\n", int32_t(em));
     }    
@@ -325,7 +285,7 @@ loop()
   {
     elapsedMicros em = 0;
     scpi_handle_serial();
-    if (int32_t(em) > 100)
+    if (int32_t(em) > 500)
     {
       Serial.printf("scpi_handle_serial: %d us\n", int32_t(em));
     }
@@ -339,6 +299,31 @@ loop()
       {
         Serial.printf("SPECIAL Button pressed\n");
         ntp_app_trigger_synch();
+
+        // show PROGRAM FS  
+        Serial.printf("little FS: used %llu / total %llu bytes\n", g_little_fs.usedSize(), g_little_fs.totalSize());
+        {
+          File root = g_little_fs.open("/"); 
+          print_directory(root, 0);
+          root.close();
+        }
+
+        if (builtin_sd_card_begin())
+        {
+          sd_card_print_files();
+          // read SD card 'www' directory and copy all files from it.
+          Serial.println("copy 'www' from SD card...");
+          g_little_fs.mkdir("/www");
+          File www = SD.open("/www");
+          copy_directory_to_little_fs(www, "/www");
+          www.close();
+
+          Serial.println("copy 'config.json' and 'connect_links.bin' from SD card...");
+          copy_file_to_little_fs("config.json");
+          // copy_file_to_SD("connect_links.bin");
+        }
+
+
         special_button_state = 1;
       }
     } else
@@ -434,7 +419,7 @@ loop()
   }
 
   unsigned long stop_time = micros();
-  if ((stop_time - start_time) > 100)
+  if ((stop_time - start_time) > 500)
   {
     Serial.print("main loop: ");
     Serial.print(stop_time - start_time);

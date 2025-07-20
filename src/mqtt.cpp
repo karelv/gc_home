@@ -94,11 +94,13 @@ mqtt_reconnect_handler(void *)
         // at every reconnect inform about all of relay states 
         sprintf(topic, "gc_home/relays/%03d/state", rel_nr);        
         g_mqtt_client.publish(topic, rel_get_state(rel_nr, false) ? "ON" : "OFF");
+        // Serial.printf("MQTT: publish %s = %s\n", topic, rel_get_state(rel_nr, false) ? "ON" : "OFF");
       }
       for (uint8_t but_nr=0; but_nr<MAX_BUTTONS; but_nr++)
       {
         sprintf(topic, "gc_home/buttons/%03d/state", but_nr);
         g_mqtt_client.publish(topic, "idle");
+        // Serial.printf("MQTT: publish %s = %s\n", topic, "idle");
       }
 
       if (first_run) // publish home assistant config only once

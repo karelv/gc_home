@@ -33,6 +33,7 @@ uint8_t rel_update(uint8_t rel_no, uint8_t value);
 uint8_t rel_get_state(uint8_t rel_no, bool update_state = true);
 void rel_flush();
 void rel_config_slave_addresses(uint16_t index=-1, uint8_t sa=0xFF);
+void rel_print_status();
 
 bool pushbutton_get_state(uint8_t button);
 void button_config_slave_addresses(uint16_t index=-1, uint8_t sa=0xFF);

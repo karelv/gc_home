@@ -468,5 +468,6 @@ void scpi_register_commands()
   scpi.RegisterCommand("TEST:LIN:RXD", scpi_test_lin_rxd);
   scpi.RegisterCommand("TEST:LIN:TXD", scpi_test_lin_txd);
   scpi.RegisterCommand("TEST:1W:TXD", scpi_test_1w_txd);
-  scpi.PrintDebugInfo(Serial);
+  // use this print to examine how large the buffers needs to be...
+  // scpi.PrintDebugInfo(Serial);
 }

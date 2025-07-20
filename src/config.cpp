@@ -6,6 +6,9 @@
 #include <LittleFS.h>               // LittleFS 
 #include <ArduinoJson.h>            // JSON file format
 
+#include "i2c_io.h"
+#include "i2c_input_24v.h"
+
 // SD CARD
 const int CHIP_SELECT = BUILTIN_SDCARD;
 
@@ -288,6 +291,7 @@ void read_config_json()
       config_f.close();
     }
     DeserializationError error = deserializeJson(g_json, g_buffer, strlen(g_buffer));
+    Serial.printf("DeserializationError: '%s'\n", error.c_str());
 
     if (error) {
       Serial.print("read config.json failed: ");
@@ -317,6 +321,48 @@ void read_config_json()
       g_use_ac_power_detector = g_json["use_AC_detector"];
       g_use_power_meter = g_json["use_power_meter"];
       Serial.printf("config: use_AC_detector = %d, use_power_meter = %d\n", g_use_ac_power_detector, g_use_power_meter);
+    }
+    {
+      JsonArray input_boards = g_json["i2c_input_boards"];
+      for (uint8_t i=0; i<input_boards.size(); i++)
+      {
+        Serial.printf("config: input_boards[%d]\n", i);
+        const char *board = input_boards[i]["type"].as<const char*>();
+        if (!strcasecmp(board, "I2C-INPUT-24V"))
+        {
+          I2CInput24V *input_board = new I2CInput24V();
+          input_board->config(
+            input_boards[i]["bus"].as<uint8_t>(),
+            input_boards[i]["id"].as<uint8_t>(),
+            input_boards[i]["AD1"].as<const char*>(),
+            input_boards[i]["AD2"].as<const char*>()
+          );
+          i2c_input_boards_add_at(input_board, input_boards[i]["id"].as<uint8_t>());
+        } else {
+          Serial.printf("config: i2c_input_boards: Unknown board type: '%s'\n", board);
+        }
+      }
+    }
+    {
+      JsonArray output_boards = g_json["i2c_output_boards"];
+      for (uint8_t i=0; i<output_boards.size(); i++)
+      {
+        Serial.printf("config: output_boards[%d]\n", i);
+        const char *board = output_boards[i]["type"].as<const char*>();
+        if (!strcasecmp(board, "I2C-INPUT-24V"))
+        {
+          I2CInput24V *output_board = new I2CInput24V();
+          output_board->config(
+            output_boards[i]["bus"].as<uint8_t>(),
+            output_boards[i]["id"].as<uint8_t>(),
+            output_boards[i]["AD1"].as<const char*>(),
+            output_boards[i]["AD2"].as<const char*>()
+          );
+          i2c_output_boards_add_at(output_board, output_boards[i]["id"].as<uint8_t>());
+        } else {
+          Serial.printf("config: i2c_output_boards: Unknown board type: '%s'\n", board);
+        }
+      }
     }
   }
 }

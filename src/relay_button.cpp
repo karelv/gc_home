@@ -24,6 +24,15 @@ uint8_t g_input_io_enabled[MAX_INPUT_IOEXPANDERS];
 
 ConnectLink g_connect_links[MAX_CONNECT_LINKS];
 
+void rel_print_status()
+{
+  Serial.println("Relay status:");
+  for (uint8_t i=0; i<4; i++)
+  {
+    Serial.printf("  %d: %02X vs %02X\n", i, g_relays_status[i], g_relays_status_update[i]);
+  }
+}
+
 // IO expander section.
 uint8_t 
 rel_update(uint8_t rel_no, uint8_t value)
@@ -188,20 +197,17 @@ handle_io_expanders(void *)
   unsigned long start_time = micros();
 
   // 1. Read inputs(buttons)
-  //Serial.println("io expanders routine");
   static uint8_t debug = 0;
   uint8_t current_button_state[MAX_INPUT_IOEXPANDERS] = {};
   for (uint8_t i=0; i<MAX_INPUT_IOEXPANDERS; i++)
   {
     if (!g_input_io_enabled[i]) continue;
     int count = Wire1.requestFrom(g_input_sa_list[i], uint8_t(1));
-    //Serial.printf("handle_io_expanders: count = %d\n", count);
     if (count != 1) 
     {
       g_input_io_enabled[i] = false;
       continue;
     }
-    // Serial.printf("read[%d] --> %d\n", i, count);
     if (!Wire1.available()) continue;
     current_button_state[i] = ~Wire1.read();
     
@@ -214,13 +220,9 @@ handle_io_expanders(void *)
   unsigned long stop_time = micros();
   if ((stop_time - start_time) > 1000)
   {
-    Serial.print("ioexpanders after 1: ");
+    Serial.print("ioexpanders end:");
     Serial.print(stop_time - start_time);
     Serial.println(" us");
-//    debug = 1;
-    // Wire1.end();
-    // Wire1.setClock(400000);
-    // Wire1.begin();
   }
 
   // 2. compute and emit signals on queue
@@ -462,7 +464,7 @@ io_expanders_reconnect_handler(void *)
     Wire1.beginTransmission(g_input_sa_list[i]);
     byte result = Wire1.endTransmission();     // stop transmitting
 
-    if (result != 2)
+    if (result == 0)
     {
       g_input_io_enabled[i] = true;
       Serial.printf("io_expanders_reconnect_handler: sa:0x%02X enabled!\n", g_input_sa_list[i]);

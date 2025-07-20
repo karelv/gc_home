@@ -320,6 +320,7 @@ loop()
 
           Serial.println("copy 'config.json' and 'connect_links.bin' from SD card...");
           copy_file_to_little_fs("config.json");
+          copy_file_to_little_fs("connect_links.bin");
           // copy_file_to_SD("connect_links.bin");
         }
 

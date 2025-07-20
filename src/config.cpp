@@ -99,10 +99,15 @@ handle_reconnect_sd(void *)
 void
 read_connect_links()
 {
+  Serial.printf("read_connect_links...\n");
   const char *filename = "connect_links.bin";
   memset(g_connect_links, 0, sizeof(g_connect_links));
 
-  if (!g_little_fs.exists(filename)) return;
+  if (!g_little_fs.exists(filename))
+  {
+    Serial.printf("Error: read_connect_links: cannot find config file in little_fs\n");
+    return;
+  }
   File f = g_little_fs.open(filename);
   if (!f) return;
   
@@ -119,7 +124,7 @@ read_connect_links()
   {
     if (i >= MAX_CONNECT_LINKS)
     {
-      Serial.println("Connect links out of memeory");
+      Serial.println("Error: connect_links.bin: Connect links out of memeory");
       break;
     }
     g_connect_links[i].input_.cmd_ = f.read();
@@ -137,62 +142,98 @@ read_connect_links()
   }
   f.close();
 
+  Serial.printf("override file content with hardcoded messages\n");
   i=0;
   g_connect_links[i].input_.cmd_ = C_BUTTON;
-  g_connect_links[i].input_.nr_ = 4;
-  g_connect_links[i].input_.state_ = S_SINGLE_CLICK;
+  g_connect_links[i].input_.nr_ = 31;
+  g_connect_links[i].input_.state_ = S_PRESSED;
   g_connect_links[i].output_.cmd_ = C_RELAY;
   g_connect_links[i].output_.nr_ = 0;
   g_connect_links[i].output_.action_ = A_TOGGLE;
   i++;
   g_connect_links[i].input_.cmd_ = C_BUTTON;
-  g_connect_links[i].input_.nr_ = 5;
+  g_connect_links[i].input_.nr_ = 30;
   g_connect_links[i].input_.state_ = S_SINGLE_CLICK;
   g_connect_links[i].output_.cmd_ = C_RELAY;
   g_connect_links[i].output_.nr_ = 1;
   g_connect_links[i].output_.action_ = A_TOGGLE;
   i++;
   g_connect_links[i].input_.cmd_ = C_BUTTON;
-  g_connect_links[i].input_.nr_ = 6;
-  g_connect_links[i].input_.state_ = S_SINGLE_CLICK;
+  g_connect_links[i].input_.nr_ = 29;
+  g_connect_links[i].input_.state_ = S_DOUBLE_CLICK;
   g_connect_links[i].output_.cmd_ = C_RELAY;
   g_connect_links[i].output_.nr_ = 2;
   g_connect_links[i].output_.action_ = A_TOGGLE;
   i++;
   g_connect_links[i].input_.cmd_ = C_BUTTON;
-  g_connect_links[i].input_.nr_ = 7;
-  g_connect_links[i].input_.state_ = S_SINGLE_CLICK;
+  g_connect_links[i].input_.nr_ = 28;
+  g_connect_links[i].input_.state_ = S_TRIPLE_CLICK;
   g_connect_links[i].output_.cmd_ = C_RELAY;
   g_connect_links[i].output_.nr_ = 3;
   g_connect_links[i].output_.action_ = A_TOGGLE;
   i++;
   g_connect_links[i].input_.cmd_ = C_BUTTON;
-  g_connect_links[i].input_.nr_ = 4;
+  g_connect_links[i].input_.nr_ = 28;
   g_connect_links[i].input_.state_ = S_DOUBLE_CLICK;
   g_connect_links[i].output_.cmd_ = C_RELAY;
-  g_connect_links[i].output_.nr_ = 31;
+  g_connect_links[i].output_.nr_ = 4;
   g_connect_links[i].output_.action_ = A_TOGGLE;
   i++;
   g_connect_links[i].input_.cmd_ = C_BUTTON;
-  g_connect_links[i].input_.nr_ = 5;
-  g_connect_links[i].input_.state_ = S_DOUBLE_CLICK;
+  g_connect_links[i].input_.nr_ = 28;
+  g_connect_links[i].input_.state_ = S_SINGLE_CLICK;
   g_connect_links[i].output_.cmd_ = C_RELAY;
-  g_connect_links[i].output_.nr_ = 30;
+  g_connect_links[i].output_.nr_ = 5;
   g_connect_links[i].output_.action_ = A_TOGGLE;
   i++;
   g_connect_links[i].input_.cmd_ = C_BUTTON;
-  g_connect_links[i].input_.nr_ = 6;
-  g_connect_links[i].input_.state_ = S_DOUBLE_CLICK;
+  g_connect_links[i].input_.nr_ = 28;
+  g_connect_links[i].input_.state_ = S_LONG_PRESS;
   g_connect_links[i].output_.cmd_ = C_RELAY;
-  g_connect_links[i].output_.nr_ = 29;
-  g_connect_links[i].output_.action_ = A_TOGGLE;
+  g_connect_links[i].output_.nr_ = 0;
+  g_connect_links[i].output_.action_ = A_OFF;
   i++;
   g_connect_links[i].input_.cmd_ = C_BUTTON;
-  g_connect_links[i].input_.nr_ = 7;
-  g_connect_links[i].input_.state_ = S_DOUBLE_CLICK;
+  g_connect_links[i].input_.nr_ = 28;
+  g_connect_links[i].input_.state_ = S_LONG_PRESS;
   g_connect_links[i].output_.cmd_ = C_RELAY;
-  g_connect_links[i].output_.nr_ = 28;
-  g_connect_links[i].output_.action_ = A_TOGGLE;
+  g_connect_links[i].output_.nr_ = 1;
+  g_connect_links[i].output_.action_ = A_OFF;
+  i++;
+  g_connect_links[i].input_.cmd_ = C_BUTTON;
+  g_connect_links[i].input_.nr_ = 28;
+  g_connect_links[i].input_.state_ = S_LONG_PRESS;
+  g_connect_links[i].output_.cmd_ = C_RELAY;
+  g_connect_links[i].output_.nr_ = 2;
+  g_connect_links[i].output_.action_ = A_OFF;
+  i++;
+  g_connect_links[i].input_.cmd_ = C_BUTTON;
+  g_connect_links[i].input_.nr_ = 28;
+  g_connect_links[i].input_.state_ = S_LONG_PRESS;
+  g_connect_links[i].output_.cmd_ = C_RELAY;
+  g_connect_links[i].output_.nr_ = 3;
+  g_connect_links[i].output_.action_ = A_OFF;
+  i++;
+  g_connect_links[i].input_.cmd_ = C_BUTTON;
+  g_connect_links[i].input_.nr_ = 28;
+  g_connect_links[i].input_.state_ = S_LONG_PRESS;
+  g_connect_links[i].output_.cmd_ = C_RELAY;
+  g_connect_links[i].output_.nr_ = 4;
+  g_connect_links[i].output_.action_ = A_OFF;
+  i++;
+  g_connect_links[i].input_.cmd_ = C_BUTTON;
+  g_connect_links[i].input_.nr_ = 28;
+  g_connect_links[i].input_.state_ = S_LONG_PRESS;
+  g_connect_links[i].output_.cmd_ = C_RELAY;
+  g_connect_links[i].output_.nr_ = 5;
+  g_connect_links[i].output_.action_ = A_OFF;
+  i++;
+  g_connect_links[i].input_.cmd_ = C_BUTTON;
+  g_connect_links[i].input_.nr_ = 28;
+  g_connect_links[i].input_.state_ = S_LONG_PRESS;
+  g_connect_links[i].output_.cmd_ = C_RELAY;
+  g_connect_links[i].output_.nr_ = 6;
+  g_connect_links[i].output_.action_ = A_OFF;
 }
 
 

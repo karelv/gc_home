@@ -420,25 +420,6 @@ handle_io_expanders(void *)
   // ok, here all event signals should have been processed
   memset(g_event_signals, 0, sizeof(g_event_signals));
 
-  // RelaySignal rel_signal;
-  // while (g_queue_relay_signals.pop(&rel_signal))
-  // {
-  //   uint8_t new_state = 0;
-  //   if (rel_signal.action_ == A_ON) new_state = 1;
-  //   if (rel_signal.action_ == A_TOGGLE)
-  //   {
-  //     new_state = rel_get_state(rel_signal.rel_nr_) ? 0 : 1;
-  //   }
-  //   rel_update(rel_signal.rel_nr_, new_state);
-  // }
-  // stop_time = micros();
-  // if ((stop_time - start_time) > 1000)
-  // {
-  //   Serial.print("ioexpanders after 3: ");
-  //   Serial.print(stop_time - start_time);
-  //   Serial.println(" us");
-  // }
-
   // 4. do set the relays (flush)
   rel_flush();
 

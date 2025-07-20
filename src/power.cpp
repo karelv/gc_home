@@ -20,6 +20,8 @@ power_begin()
   pinMode(LED_BUILTIN, OUTPUT); // set LED pin to OUTPUT
   pinMode(PIN_AC_DETECTOR, INPUT_PULLUP);
   pinMode(PIN_ENABLE_POWER, OUTPUT);
+  pinMode(PIN_LED_SPECIAL, OUTPUT);
+  digitalWrite(PIN_LED_SPECIAL, LOW);
   digitalWrite(PIN_ENABLE_POWER, 1); // turn on the trafos
   // be optimistic, let's reset the AC power detector (before we start the g_timer!).
   g_AC_last_seen = 0;
@@ -34,6 +36,11 @@ power_down() // only call this routing from within the g_timer handle routines. 
   // lets preserve energy
   timer_cancel_all_tasks();
   set_arm_clock(24'000'000);
+  digitalWrite(PIN_LED_SPECIAL, LOW);
+  digitalWrite(PIN_LED_WWW, LOW);
+  digitalWrite(PIN_LED_ETH, LOW);
+  digitalWrite(PIN_LED_MQTT, LOW);
+  digitalWrite(PIN_LED_IO, LOW);
 
   // turn off relay power AC/DC
 
@@ -58,6 +65,7 @@ detect_AC(void *)
     g_AC_last_seen = 0;
     if (!last_power_result)
     {
+      digitalWrite(PIN_LED_SPECIAL, HIGH);
       Serial.printf("AC Power back on !!\n");
     }
     last_power_result = true;
@@ -71,6 +79,7 @@ detect_AC(void *)
   {
     if (last_power_result)
     {
+      digitalWrite(PIN_LED_SPECIAL, LOW);
       Serial.printf("AC power loss!!!\n");
     }
     last_power_result = false;

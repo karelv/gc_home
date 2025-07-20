@@ -28,6 +28,9 @@ struct ConnectLink{
 extern ConnectLink g_connect_links[MAX_CONNECT_LINKS];
 
 
+void rel_but_init();
+
+
 // IO Expander function declaration section
 uint8_t rel_update(uint8_t rel_no, uint8_t value);
 uint8_t rel_get_state(uint8_t rel_no, bool update_state = true);

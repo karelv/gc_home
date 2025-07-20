@@ -5,6 +5,7 @@
 #include "mqtt.h"
 #include "eth.h"
 #include "relay_button.h"
+#include "pins.h"
 
 using namespace qindesign::network; // ethernet/MQTT/webserver
 
@@ -15,6 +16,9 @@ uint8_t g_mqtt_is_reconnecting = false;
 
 bool mqtt_begin()
 {
+  pinMode(PIN_LED_MQTT, OUTPUT);
+  digitalWrite(PIN_LED_MQTT, LOW);
+
   g_mqtt_eth_client.setConnectionTimeout(MQTT_CLIENT_CONNECTION_TIMEOUT_MS); // in ms (timeout for connecting)
 
   g_mqtt_client.setServer(MQTT_SERVER_IP, MQTT_SERVER_PORT);
@@ -25,6 +29,7 @@ bool mqtt_begin()
 
 void mqtt_disconnect()
 {
+  digitalWrite(PIN_LED_MQTT, LOW);
   g_mqtt_eth_client.setConnectionTimeout(MQTT_CLIENT_DISCONNECT_TIMEOUT_MS);
   g_mqtt_client.disconnect();
   g_mqtt_is_disconnected = true;
@@ -42,6 +47,7 @@ void mqtt_loop()
 
   if (!g_mqtt_client.connected())
   {
+    digitalWrite(PIN_LED_MQTT, LOW);
     if (micros() - start_time > 100000)
     {
       Serial.printf("MQTT: not connected... time: %d us (g is disconnected = %d)\n", micros() - start_time, g_mqtt_is_disconnected);
@@ -71,6 +77,7 @@ mqtt_reconnect_handler(void *)
 
   if (!g_mqtt_is_disconnected && g_mqtt_client.connected())
   { 
+    digitalWrite(PIN_LED_MQTT, HIGH);
     Serial.printf("connected!\n");
   } else
   {
@@ -113,14 +120,16 @@ mqtt_reconnect_handler(void *)
 
       // Publish 'online' status
       g_mqtt_client.publish("gc_home/status", "online", true);
+      digitalWrite(PIN_LED_MQTT, HIGH); // report to LED MQTT is active!
     } else
     {
+      digitalWrite(PIN_LED_MQTT, LOW);
       Serial.printf("MQTT: No connection :-( state: %d; try reconnect: %d us\n", g_mqtt_client.state(), micros() - start_time);
     }
   }
   stop_time = micros();
   if ((stop_time - start_time) > 500)
-  { 
+  {
     Serial.printf("mqtt_reconnect_handler: %d us\n", stop_time - start_time);
   }
   g_mqtt_is_reconnecting = false;

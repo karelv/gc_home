@@ -6,6 +6,8 @@
 
 #include "relay_button.h"
 #include "events.h"
+#include "config.h"
+#include "pins.h"
 
 
 ButtonState g_button_states[MAX_BUTTONS];
@@ -13,9 +15,8 @@ ButtonState g_button_states[MAX_BUTTONS];
 static uint8_t g_relays_status[MAX_OUTPUT_IOEXPANDERS];
 static uint8_t g_relays_status_update[MAX_OUTPUT_IOEXPANDERS];
 
-uint8_t g_input_sa_list[MAX_INPUT_IOEXPANDERS] = {0x50, 0x51, 0x58, 0x59, 0x52, 0x53, 0x5A, 0x5B};
-// uint8_t g_input_sa_list[MAX_INPUT_IOEXPANDERS] = {0x50};
-uint8_t g_output_sa_list[MAX_OUTPUT_IOEXPANDERS] = {0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x38, 0x39, 0x3A, 0x3B, 0x3C, 0x3D, 0x3E, 0x3F};
+uint8_t g_input_sa_list[MAX_INPUT_IOEXPANDERS] = {0};
+uint8_t g_output_sa_list[MAX_OUTPUT_IOEXPANDERS] = {0};
 uint8_t g_previous_button_state[MAX_INPUT_IOEXPANDERS];
 
 // IO Expander global variables declaration section
@@ -205,6 +206,7 @@ handle_io_expanders(void *)
     int count = Wire1.requestFrom(g_input_sa_list[i], uint8_t(1));
     if (count != 1) 
     {
+      digitalWrite(PIN_LED_IO, LOW);
       g_input_io_enabled[i] = false;
       continue;
     }
@@ -439,9 +441,12 @@ handle_io_expanders(void *)
 bool
 io_expanders_reconnect_handler(void *)
 {
+  bool found_disconnected_sa = false;
   for (uint8_t i=0; i<MAX_INPUT_IOEXPANDERS; i++)
   {
     if (g_input_io_enabled[i]) continue;
+    if (g_input_sa_list[i] == 0) continue; // skip slaves with zero address! 
+
     Wire1.beginTransmission(g_input_sa_list[i]);
     byte result = Wire1.endTransmission();     // stop transmitting
 
@@ -449,7 +454,18 @@ io_expanders_reconnect_handler(void *)
     {
       g_input_io_enabled[i] = true;
       Serial.printf("io_expanders_reconnect_handler: sa:0x%02X enabled!\n", g_input_sa_list[i]);
+    } else
+    {
+      found_disconnected_sa = true;
     }
+  }
+
+  if (found_disconnected_sa)
+  {
+    digitalWrite(PIN_LED_IO, LOW);
+  } else
+  {
+    digitalWrite(PIN_LED_IO, HIGH);
   }
   return true;
 }
@@ -469,4 +485,34 @@ void rel_but_config_print()
     Serial.printf("0x%02X, ", g_output_sa_list[i]);
   }
   Serial.printf("\n");  
+}
+
+
+void rel_but_init()
+{
+  pinMode(PIN_LED_IO, OUTPUT);
+  digitalWrite(PIN_LED_IO, LOW);
+  uint clk = 100000;
+  Wire.setClock(clk);
+  Wire.begin();
+  Wire.setClock(clk);
+
+  clk = 400000;
+  Wire1.setClock(clk);
+  Wire1.begin();
+  Wire1.setClock(clk);
+
+  // clk = 400000;
+  // Wire2.setClock(clk);
+  // Wire2.begin();
+  // Wire2.setClock(clk);
+ 
+  Serial.println("Read the config files");
+  read_config_json();
+  read_and_restore_relay_states();
+  read_connect_links();
+  rel_but_config_print();
+
+  // by default the IO expanders are in disconnect state, let's connect them.
+  io_expanders_reconnect_handler(NULL);
 }

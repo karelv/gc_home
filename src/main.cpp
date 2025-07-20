@@ -46,7 +46,7 @@
 #include "teensy_rtc15.h"
 #include "CronAlarms.h"
 #include "scpi.h"
-#include "i2c_input_24v.h"
+// #include "i2c_input_24v.h"
 #include "pins.h"
 
 using namespace qindesign::network; // ethernet/MQTT/webserver
@@ -64,8 +64,6 @@ Timer<64, millis> g_timer_ms;
 
 // EventResponder: ==> add the timers to the yield function
 EventResponder g_event_responder;
-
-I2CInput24V test;
 
 void
 timer_responder(EventResponderRef event_responder)
@@ -132,36 +130,14 @@ setup()
 
   pinMode(PIN_SPECIAL_BUTTON, INPUT_PULLUP);
 
-  Serial.printf("init I2C\n");
-  uint clk = 100000;
-  Wire.setClock(clk);
-  Wire.begin();
-  Wire.setClock(clk);
-
-  clk = 400000;
-  Wire1.setClock(clk);
-  Wire1.begin();
-  Wire1.setClock(clk);
-
-  // clk = 400000;
-  // Wire2.setClock(clk);
-  // Wire2.begin();
-  // Wire2.setClock(clk);
-  // by default the IO expanders are in disconnect state, let's connect them.
-
   Serial.println("Init the file system");
   if (!g_little_fs.begin(6*1024*1024))
   {
     Serial.printf("Error starting %s\n", "Program FLASH DISK");
   }
 
-  Serial.println("Read the config files");
-  read_config_json();
-  read_and_restore_relay_states();
-  read_connect_links();
-  rel_but_config_print();
-
-  io_expanders_reconnect_handler(NULL);
+  Serial.printf("init relays and buttons\n");
+  rel_but_init();
 
   Serial.println("Init the timers!");
   g_timer_us.every(  100'000, heartbeat_led);  // every 100ms

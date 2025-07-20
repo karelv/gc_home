@@ -7,6 +7,7 @@
 #include "ntp_app.h"
 #include "mqtt.h"
 #include "teensy_rtc15.h"
+#include "pins.h"
 
 using namespace qindesign::network; // ethernet/MQTT/webserver
 
@@ -18,6 +19,11 @@ bool
 init_ethernet() 
 {
   Serial.printf("Init ethernet...\n");
+
+
+  pinMode(PIN_LED_ETH, OUTPUT);
+  digitalWrite(PIN_LED_ETH, LOW);
+
   // Unlike the Arduino API (which you can still use), QNEthernet uses
   // the Teensy's internal MAC address by default, so we can retrieve
   // it here
@@ -37,7 +43,9 @@ init_ethernet()
   Ethernet.onLinkState([](bool state) {
     Serial.printf("[Ethernet] Link %s\r\n", state ? "ON" : "OFF");
     if (state)
-    { // every re-connect re-synch the time with NTP server
+    {
+      digitalWrite(PIN_LED_ETH, HIGH);
+      // every re-connect re-synch the time with NTP server
       // todo: NTP
       mqtt_reconnect_handler(NULL);
       // ntp_begin();
@@ -45,6 +53,7 @@ init_ethernet()
       // ntp_app_trigger_synch();
     } else
     {
+      digitalWrite(PIN_LED_ETH, LOW);
       Serial.printf("[Ethernet] Link OFF, inform MQTT\n");
       mqtt_disconnect();
     }

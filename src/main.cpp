@@ -46,6 +46,7 @@
 #include "teensy_rtc15.h"
 #include "CronAlarms.h"
 #include "scpi.h"
+#include "ds18b20.h"
 // #include "i2c_input_24v.h"
 #include "pins.h"
 
@@ -157,6 +158,8 @@ setup()
   //g_timer_ms.every(120'000, ntp_app_timer);  // every 2 minutes
   g_timer_ms.every(1000, ntp_app_timer);  // every 2 minutes
 
+  g_timer_ms.every(3'000, ds18b20_timer); // every 30 seconds start a new temperature measurement
+
   g_timer_ms.every(200, ntp_app_LED);  // every 200ms update the status
 
 
@@ -214,6 +217,9 @@ setup()
   
   Serial.println("SCPI commands registration...");
   scpi_register_commands();
+
+  Serial.println("Start temperature DS18b20");
+  ds18b20_init();
   
   Serial.printf("Init finished!\n");
 }
@@ -248,6 +254,14 @@ loop()
     if (int32_t(em) > 100)
     {
       Serial.printf("mqtt_loop: %d us\n", int32_t(em));
+    }    
+  }
+  {
+    elapsedMicros em = 0;     
+    ds18b20_loop();
+    if (int32_t(em) > 100)
+    {
+      Serial.printf("ds18b20_loop: %d us\n", int32_t(em));
     }    
   }
   {

@@ -89,7 +89,7 @@ mqtt_reconnect_handler(void *)
       // ... and resubscribe
       for (uint8_t rel_nr=0; rel_nr<MAX_RELAYS; rel_nr++)
       {
-        sprintf(topic, "gc_home/relays/%03d/set", rel_nr);        
+        sprintf(topic, "gc_home/relays/%03d/set", rel_nr);
         g_mqtt_client.subscribe(topic);
         // at every reconnect inform about all of relay states 
         sprintf(topic, "gc_home/relays/%03d/state", rel_nr);        
@@ -137,12 +137,20 @@ mqtt_callback(char* topic, byte* payload, unsigned int length)
   strncpy(buffer, (char *)payload, length);
 
   Serial.printf("<< '%s' = '%s' (%d)\n", topic, buffer, length);
-  const char *rel_prefix = "domotica/rel_";
+  const char *rel_prefix = "gc_home/relays/";
   int pos = strlen(rel_prefix);
   if (!strncasecmp(topic, rel_prefix, pos))
   { // ok, we have a relay command from home assistant..
     int rel_nr = atoi(topic+pos);
-    if ((0 < rel_nr) && (rel_nr < MAX_RELAYS))
+    if (rel_nr == 0)
+    {
+      if (strncmp(topic + pos, "000", 3)) // check if zero...
+      {// only allow relay 0 if we are sure there is 000 in the topic!
+        rel_nr = -1; // do not allow relay 0 if there is no zero in the topic
+      }
+    }
+    
+    if ((0 <= rel_nr) && (rel_nr < MAX_RELAYS))
     {
       uint8_t action = A_NONE;
       if (!strcasecmp(buffer, "0")) action = A_OFF;
@@ -154,7 +162,7 @@ mqtt_callback(char* topic, byte* payload, unsigned int length)
       {
         rel_update(rel_nr, action);
       }
-    }    
+    }
   }
 }
 
@@ -162,9 +170,10 @@ mqtt_callback(char* topic, byte* payload, unsigned int length)
 bool
 mqtt_publish_button_idle(void *button_nr)
 {
+  // Serial.printf("mqtt_publish_button_idle: button_nr = %d\n", int(button_nr));
   if (!g_mqtt_client.connected()) return false;
   char topic[32];
-  sprintf(topic, "gc_home/buttons/%03d", int(button_nr));
+  sprintf(topic, "gc_home/buttons/%03d/state", int(button_nr));
   g_mqtt_client.publish(topic, "idle");
   return false;
 }

@@ -373,12 +373,12 @@ loop()
         if (s.state_ == S_TRIPLE_CLICK) state = "triple_click";
         if (s.state_ == S_LONG_PRESS) state = "long_press";
         mqtt_publish_button(s.nr_, state);
-        g_timer_ms.in(1000, mqtt_publish_button_idle, (void *)int(s.nr_));
+        g_timer_ms.in(3000, mqtt_publish_button_idle, (void *)int(s.nr_));
       } 
       if (s.cmd_ == C_RELAY)
       {
-        const char *state = "0";
-        if (s.state_ == S_ON) state = "1";
+        const char *state = "OFF";
+        if (s.state_ == S_ON) state = "ON";
         mqtt_publish_relay(s.nr_, state);
       }
 

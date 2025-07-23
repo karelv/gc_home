@@ -1,4 +1,3 @@
-
 #include "DS2480b_event_loop.h"
 #include "ds18b20.h"
 
@@ -8,17 +7,25 @@ union ByteFloat
   uint8_t bytes_[sizeof(float)];
 };
 
+
 void DS2480b_call_back(DS2480bEventLoop *ow, DS2480bTaskData *data);
 
+
+// Global variables for DS2480b
 DS2480bEventLoop g_ow(Serial7, DS2480b_call_back);
+ow_rom_name_t g_ow_rom_names[OW_MAX_SLAVES];
+uint8_t g_ow_rom_name_count = 0;
+uint8_t g_ow_rom_name_index = 0;
+
+// Global variables for DS18B20
 
 uint8_t g_slave_addresses[DS18B20_MAX_SLAVES][8];
 uint8_t g_slave_address_index;
 uint8_t g_ds18b20_sa_index;
 uint8_t g_slave_count = 0;
+ds18b20_callback_t g_18b20_callback = nullptr;
 
-float g_ds18b20_temperatures[DS18B20_MAX_SLAVES];
-unsigned long g_ds18b20_last_update;
+DS18b20_t g_ds18b20_sensors[DS18B20_MAX_SLAVES];
 
 void DS2480b_call_back(DS2480bEventLoop *ow, DS2480bTaskData *data)
 {
@@ -75,7 +82,6 @@ void DS2480b_call_back(DS2480bEventLoop *ow, DS2480bTaskData *data)
     {
       temperature.bytes_[i] = data->buffer_[8+i];
     }    
-    g_ds18b20_temperatures[g_ds18b20_sa_index] = temperature.float_;
     Serial.printf("Status %d | SA: %02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X: %f DegC\n", data->status_, data->buffer_[7], data->buffer_[6], data->buffer_[5], data->buffer_[4], data->buffer_[3], data->buffer_[2], data->buffer_[1], data->buffer_[0], temperature.float_);
     g_ds18b20_sa_index++;
     if (g_ds18b20_sa_index < g_slave_address_index)
@@ -101,7 +107,10 @@ void DS2480b_call_back(DS2480bEventLoop *ow, DS2480bTaskData *data)
   }
 }
 
-
+void ds18b20_set_callback(ds18b20_callback_t callback)
+{
+  g_18b20_callback = callback;
+}
 
 void ds18b20_init()
 {
@@ -121,29 +130,10 @@ void ds18b20_trigger_new_measurement()
   g_ow.DS2480bMasterResetCycle();
 }
 
-uint8_t ds18b20_get_temperature(uint8_t index, float *temperature)
-{
-  if (index >= g_slave_count)
-  {
-    return false;
-  }  
-  *temperature = g_ds18b20_temperatures[index];
-  return true;
-}
-
-uint8_t ds18b20_get_slave_id(uint8_t index, uint8_t *slave_id)
-{
-  if (index >= g_slave_count)
-  {
-    slave_id = nullptr;
-    return false;
-  }
-  slave_id = g_slave_addresses[index];
-  return true;
-}
 
 bool ds18b20_timer(void *)
 {
   ds18b20_trigger_new_measurement();
   return true;
 }
+

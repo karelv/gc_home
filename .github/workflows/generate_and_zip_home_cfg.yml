@@ -1,0 +1,41 @@
+name: Generate and Zip Home Configs
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install -r utils/requirements.txt
+
+      - name: Convert connection_links_button_relays.md to bin
+        run: |
+          python utils/convert_connection_links.py to-bin cfg/home/connection_links_button_relays.md build/cfg/connection_links_button_relays.bin
+
+      - name: Convert one_wire_rom_names.md to bin
+        run: |
+          python utils/md2bin_one_wire_rom_names.py to-bin cfg/home/one_wire_rom_names.md build/cfg/one_wire_rom_names.bin
+
+      - name: Zip build/cfg directory
+        run: |
+          zip -r home_cfg.zip build/cfg
+
+      - name: Upload zip artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: home_cfg
+          path: home_cfg.zip

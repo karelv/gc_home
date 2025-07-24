@@ -1,3 +1,4 @@
+import os
 import sys
 import struct
 from pytablereader import TableFileLoader
@@ -69,6 +70,10 @@ def to_bin(input_md, output_bin):
     out_state_idx = data_header.index('OUT States') if 'OUT States' in data_header else None
     out_action_idx = data_header.index('OUT Actions') if 'OUT Actions' in data_header else None
     out_value_idx = data_header.index('OUT Value') if 'OUT Value' in data_header else None
+
+    output_dir = os.path.dirname(os.path.abspath(output_bin))
+    if output_dir and not os.path.exists(output_dir):
+        os.makedirs(output_dir)
 
     with open(output_bin, 'wb') as fout:
         value_table_len = len(value_table.rows)
@@ -201,6 +206,10 @@ def to_md(input_bin, output_md):
     # Write markdown table with correct headers
     value_headers = ['Commands', 'States', 'Actions', 'Value']
     headers = ['IN Commands', 'IN States', 'IN Actions', 'IN Value', 'OUT Cmd', 'OUT States', 'OUT Actions', 'OUT Value']
+
+    if not os.path.exists(os.path.dirname(output_md)):
+        os.makedirs(os.path.dirname(output_md))
+
     with open(output_md, 'w', encoding='utf-8') as fout:
         # First table: value_table, columns 16 characters wide
         fout.write('## Value Table\n\n')

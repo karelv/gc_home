@@ -1,3 +1,4 @@
+import os
 import sys
 import struct
 from pytablereader import TableFileLoader
@@ -24,6 +25,10 @@ def to_bin(input_md, output_bin):
     except ValueError:
         print("Table must contain 'rom-id' and 'name' columns.")
         sys.exit(1)
+
+    output_dir = os.path.dirname(os.path.abspath(output_bin))
+    if output_dir and not os.path.exists(output_dir):
+        os.makedirs(output_dir)
 
     with open(output_bin, 'wb') as fout:
         # first record is special, it has 64 bytes.
@@ -70,6 +75,9 @@ def to_md(input_bin, output_md):
             rows.append((romid_str, name))
 
     # Write markdown table
+    if not os.path.exists(os.path.dirname(output_md)):
+        os.makedirs(os.path.dirname(output_md))
+
     with open(output_md, 'w', encoding='utf-8') as fout:
         fout.write('| rom-id             | name       |\n')
         fout.write('|--------------------|------------|\n')

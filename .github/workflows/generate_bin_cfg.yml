@@ -38,14 +38,18 @@ jobs:
         run: |
           python utils/convert_one_wire_rom_names.py to-bin cfg/heat/one_wire_rom_names.md build/cfg/heat/one_wire_rom_names.bin
 
+      - name: Add a file with the config name.
+        run: |
+          echo "home" > build/cfg/home/home.txt
+          echo "heat" > build/cfg/heat/heat.txt
 
       - name: Upload zip artifact
         uses: actions/upload-artifact@v4
         with:
           name: home_cfg
-          path: build/cfg/home/*.bin
+          path: build/cfg/home/*
       - name: Upload zip artifact
         uses: actions/upload-artifact@v4
         with:
           name: heat_cfg
-          path: build/cfg/heat/*.bin
+          path: build/cfg/heat/*

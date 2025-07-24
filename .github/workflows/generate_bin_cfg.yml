@@ -1,0 +1,51 @@
+name: Generate bin-file for configuration
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install -r utils/requirements.txt
+
+      - name: HOME Convert connection_links_button_relays.md to bin
+        run: |
+          python utils/convert_connection_links.py to-bin cfg/home/connection_links_button_relays.md build/cfg/home/connection_links_button_relays.bin
+
+      - name: HOME Convert one_wire_rom_names.md to bin
+        run: |
+          python utils/convert_one_wire_rom_names.py to-bin cfg/home/one_wire_rom_names.md build/cfg/home/one_wire_rom_names.bin
+
+      - name: HEAT Convert connection_links_button_relays.md to bin
+        run: |
+          python utils/convert_connection_links.py to-bin cfg/heat/connection_links_button_relays.md build/cfg/heat/connection_links_button_relays.bin
+
+      - name: HEAT Convert one_wire_rom_names.md to bin
+        run: |
+          python utils/convert_one_wire_rom_names.py to-bin cfg/heat/one_wire_rom_names.md build/cfg/home/one_wire_rom_names.bin
+
+
+      - name: Upload zip artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: home_cfg
+          path: build/cfg/home/*.bin
+      - name: Upload zip artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: heat_cfg
+          path: build/cfg/heat/*.bin

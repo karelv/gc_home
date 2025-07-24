@@ -28,7 +28,7 @@ jobs:
 
       - name: Convert one_wire_rom_names.md to bin
         run: |
-          python utils/md2bin_one_wire_rom_names.py to-bin cfg/home/one_wire_rom_names.md build/cfg/one_wire_rom_names.bin
+          python utils/convert_one_wire_rom_names.py to-bin cfg/home/one_wire_rom_names.md build/cfg/one_wire_rom_names.bin
 
       - name: Zip build/cfg directory
         run: |

@@ -1,14 +1,4 @@
-## Connection links
-
-This file configures what a button state change (IN) will cause on a relay action (OUT).  
-
-The first table you can ignore, it informs you (and the script) about which the valid values are in the 2nd table.
-
-
-
 ## Value Table
-
-Please do edit this table, unless you're updating the firmware along with it!
 
 | Commands       | States         | Actions        | Value          |
 |----------------|----------------|----------------|----------------|
@@ -23,9 +13,6 @@ Please do edit this table, unless you're updating the firmware along with it!
 |                | S_OFF          |                | 8              |
 
 ## Data Table
-
-Optionally you can add a `Comment` column to let you remember what it actually means.
-
 
 | IN Commands | IN States      | IN Actions | IN Value | OUT Cmd    | OUT States     | OUT Actions | OUT Value |
 |-------------|----------------|------------|----------|------------|----------------|-------------|-----------|

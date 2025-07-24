@@ -1,4 +1,4 @@
-## Connection links
+c ## Connection links
 
 This file configures what a button state change (IN) will cause on a relay action (OUT).  
 

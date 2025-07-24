@@ -30,12 +30,9 @@ jobs:
         run: |
           python utils/convert_one_wire_rom_names.py to-bin cfg/home/one_wire_rom_names.md build/cfg/one_wire_rom_names.bin
 
-      - name: Zip build/cfg directory
-        run: |
-          zip -r home_cfg.zip build/cfg
 
       - name: Upload zip artifact
         uses: actions/upload-artifact@v4
         with:
           name: home_cfg
-          path: home_cfg.zip
+          path: build/cfg/*.bin

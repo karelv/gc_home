@@ -1,6 +1,7 @@
 #include <cstdio>
 
 #include <string.h>
+#include <Arduino.h>
 
 #include "ow_rom_name.h"
 
@@ -72,6 +73,11 @@ const char *ow_get_name_by_index(uint8_t index) {
     return NULL;
 }
 
+void ow_empty_rom_name_table()
+{
+  memset(g_rom_names, 0, sizeof(g_rom_names));
+}
+
 uint8_t ow_add_rom_name(const char *name, ow_rom_t rom)
 {
     for (uint8_t i = 0; i < OW_MAX_SLAVES; ++i) {
@@ -120,6 +126,22 @@ void ow_convert_rom_to_dashed_hex_string(const ow_rom_t *rom, char *buffer, size
                  rom->bytes[3], rom->bytes[2], rom->bytes[1], rom->bytes[0]);
     }
 }
+
+void ow_print_rom_name_table()
+{
+    for (uint8_t i = 0; i < OW_MAX_SLAVES; ++i) {
+        if (g_rom_names[i].name[0] != '\0') {
+            Serial.printf("ROM[%d]: %02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X, Name: %s\n",
+                          i,
+                          g_rom_names[i].rom.bytes[7], g_rom_names[i].rom.bytes[6],
+                          g_rom_names[i].rom.bytes[5], g_rom_names[i].rom.bytes[4],
+                          g_rom_names[i].rom.bytes[3], g_rom_names[i].rom.bytes[2],
+                          g_rom_names[i].rom.bytes[1], g_rom_names[i].rom.bytes[0],
+                          g_rom_names[i].name);
+        }
+    }
+}
+
 
 // int main()
 // {

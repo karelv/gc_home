@@ -25,9 +25,12 @@ const char *ow_get_name_by_rom_id(uint64_t id);
 const char *ow_get_name_by_rom_bytes(uint8_t *bytes);
 const char *ow_get_name_by_index(uint8_t index);
 
+void ow_empty_rom_name_table();
 uint8_t ow_add_rom_name(const char *name, ow_rom_t rom);
 
 ow_rom_t ow_convert_hex_string(const char *hex_string);
 void ow_convert_rom_to_dashed_hex_string(const ow_rom_t *rom, char *buffer, size_t buffer_size);
+
+void ow_print_rom_name_table();
 
 #endif // OW_ROM_NAME_H

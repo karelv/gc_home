@@ -36,9 +36,9 @@ enum Actions {
 
 struct EventSignal{
   uint8_t cmd_;
-  uint8_t nr_;
   uint8_t state_;
   uint8_t action_;
+  int32_t nr_;
 };
 
 

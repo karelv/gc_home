@@ -1,5 +1,6 @@
 #include "DS2480b_event_loop.h"
 #include "ds18b20.h"
+#include "config.h"
 
 union ByteFloat 
 {
@@ -115,6 +116,7 @@ void ds18b20_set_callback(ds18b20_callback_t callback)
 void ds18b20_init()
 {
   g_ow.begin();
+  read_one_wire_rom_id_names();
   g_slave_address_index = 0;
   g_ow.DS2480bMasterResetCycle();
 }

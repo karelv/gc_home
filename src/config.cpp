@@ -9,6 +9,8 @@
 #include "i2c_io.h"
 #include "i2c_input_24v.h"
 
+#include "ow_rom_name.h"
+
 // SD CARD
 const int CHIP_SELECT = BUILTIN_SDCARD;
 
@@ -111,13 +113,13 @@ read_connect_links()
   File f = g_little_fs.open(filename);
   if (!f) return;
   
-  uint8_t bytes_per_record = f.read();
-  uint8_t bytes_per_input = f.read();
-  uint8_t bytes_per_output = f.read();
-  for (uint8_t i=0; i<(16-3); i++) // header is 16 bytes
-  {
-    f.read();
-  }
+  uint16_t value_table_record_count = f.read();
+  value_table_record_count |= uint16_t(f.read()) << 8;
+  uint16_t data_table_record_count = f.read();
+  data_table_record_count |= uint16_t(f.read()) << 8;
+
+  // skip the value_table
+  f.seek((value_table_record_count+1) * 64, SEEK_SET);
 
   uint16_t i = 0;
   while (f.available())
@@ -128,112 +130,71 @@ read_connect_links()
       break;
     }
     g_connect_links[i].input_.cmd_ = f.read();
-    g_connect_links[i].input_.nr_ = f.read();
     g_connect_links[i].input_.state_ = f.read();
     g_connect_links[i].input_.action_ = f.read();
-    for (uint8_t j=4; j<bytes_per_input; j++) f.read();
+    int32_t nr = 0;
+    for (int k = 0; k < 4; ++k) {
+      nr |= (uint32_t(f.read()) << (8 * k));
+    }
+    g_connect_links[i].input_.nr_ = nr;
+
     g_connect_links[i].output_.cmd_ = f.read();
-    g_connect_links[i].output_.nr_ = f.read();
     g_connect_links[i].output_.state_ = f.read();
     g_connect_links[i].output_.action_ = f.read();
-    for (uint8_t j=4; j<bytes_per_output; j++) f.read();
-    for (uint8_t j=(bytes_per_input+bytes_per_output); j<bytes_per_record; j++) f.read();
+    nr = 0;
+    for (int k = 0; k < 4; ++k) {
+      nr |= (uint32_t(f.read()) << (8 * k));
+    }
+    g_connect_links[i].output_.nr_ = nr;
+
+    i++;
+    f.seek((value_table_record_count + i + 1) * 64, SEEK_SET);
+  }
+  f.close();
+}
+
+
+void
+read_one_wire_rom_id_names()
+{
+  Serial.printf("read_one_wire_rom_id_names...\n");
+  const char *filename = "one_wire_rom_names.bin";
+  
+  if (!g_little_fs.exists(filename))
+  {
+    Serial.printf("Error: read_one_wire_rom_id_names: cannot find config file in little_fs\n");
+    return;
+  }
+  File f = g_little_fs.open(filename);
+  if (!f) return;
+  
+  ow_empty_rom_name_table();
+
+  uint16_t table_record_count = f.read();
+  table_record_count |= uint16_t(f.read()) << 8;
+  
+  // move to the end of the header (first record)
+  f.seek(64, SEEK_SET);
+
+  uint16_t i = 0;
+  while (f.available())
+  {
+    uint64_t rom_id = 0;
+    for (int k = 0; k < 8; ++k) {
+      rom_id |= (uint64_t(f.read()) << (8 * k));
+    }
+    char name_buffer[57] = {0};
+    for (int k = 0; k < 56 && f.available(); ++k) {
+      name_buffer[k] = f.read();
+    }
+    ow_rom_t rom = {0};
+    rom.id = rom_id;
+    ow_add_rom_name(name_buffer, rom);
     i++;
   }
   f.close();
 
-  Serial.printf("override file content with hardcoded messages\n");
-  i=0;
-  g_connect_links[i].input_.cmd_ = C_BUTTON;
-  g_connect_links[i].input_.nr_ = 31;
-  g_connect_links[i].input_.state_ = S_PRESSED;
-  g_connect_links[i].output_.cmd_ = C_RELAY;
-  g_connect_links[i].output_.nr_ = 0;
-  g_connect_links[i].output_.action_ = A_TOGGLE;
-  i++;
-  g_connect_links[i].input_.cmd_ = C_BUTTON;
-  g_connect_links[i].input_.nr_ = 30;
-  g_connect_links[i].input_.state_ = S_SINGLE_CLICK;
-  g_connect_links[i].output_.cmd_ = C_RELAY;
-  g_connect_links[i].output_.nr_ = 1;
-  g_connect_links[i].output_.action_ = A_TOGGLE;
-  i++;
-  g_connect_links[i].input_.cmd_ = C_BUTTON;
-  g_connect_links[i].input_.nr_ = 29;
-  g_connect_links[i].input_.state_ = S_DOUBLE_CLICK;
-  g_connect_links[i].output_.cmd_ = C_RELAY;
-  g_connect_links[i].output_.nr_ = 2;
-  g_connect_links[i].output_.action_ = A_TOGGLE;
-  i++;
-  g_connect_links[i].input_.cmd_ = C_BUTTON;
-  g_connect_links[i].input_.nr_ = 28;
-  g_connect_links[i].input_.state_ = S_TRIPLE_CLICK;
-  g_connect_links[i].output_.cmd_ = C_RELAY;
-  g_connect_links[i].output_.nr_ = 3;
-  g_connect_links[i].output_.action_ = A_TOGGLE;
-  i++;
-  g_connect_links[i].input_.cmd_ = C_BUTTON;
-  g_connect_links[i].input_.nr_ = 28;
-  g_connect_links[i].input_.state_ = S_DOUBLE_CLICK;
-  g_connect_links[i].output_.cmd_ = C_RELAY;
-  g_connect_links[i].output_.nr_ = 4;
-  g_connect_links[i].output_.action_ = A_TOGGLE;
-  i++;
-  g_connect_links[i].input_.cmd_ = C_BUTTON;
-  g_connect_links[i].input_.nr_ = 28;
-  g_connect_links[i].input_.state_ = S_SINGLE_CLICK;
-  g_connect_links[i].output_.cmd_ = C_RELAY;
-  g_connect_links[i].output_.nr_ = 5;
-  g_connect_links[i].output_.action_ = A_TOGGLE;
-  i++;
-  g_connect_links[i].input_.cmd_ = C_BUTTON;
-  g_connect_links[i].input_.nr_ = 28;
-  g_connect_links[i].input_.state_ = S_LONG_PRESS;
-  g_connect_links[i].output_.cmd_ = C_RELAY;
-  g_connect_links[i].output_.nr_ = 0;
-  g_connect_links[i].output_.action_ = A_OFF;
-  i++;
-  g_connect_links[i].input_.cmd_ = C_BUTTON;
-  g_connect_links[i].input_.nr_ = 28;
-  g_connect_links[i].input_.state_ = S_LONG_PRESS;
-  g_connect_links[i].output_.cmd_ = C_RELAY;
-  g_connect_links[i].output_.nr_ = 1;
-  g_connect_links[i].output_.action_ = A_OFF;
-  i++;
-  g_connect_links[i].input_.cmd_ = C_BUTTON;
-  g_connect_links[i].input_.nr_ = 28;
-  g_connect_links[i].input_.state_ = S_LONG_PRESS;
-  g_connect_links[i].output_.cmd_ = C_RELAY;
-  g_connect_links[i].output_.nr_ = 2;
-  g_connect_links[i].output_.action_ = A_OFF;
-  i++;
-  g_connect_links[i].input_.cmd_ = C_BUTTON;
-  g_connect_links[i].input_.nr_ = 28;
-  g_connect_links[i].input_.state_ = S_LONG_PRESS;
-  g_connect_links[i].output_.cmd_ = C_RELAY;
-  g_connect_links[i].output_.nr_ = 3;
-  g_connect_links[i].output_.action_ = A_OFF;
-  i++;
-  g_connect_links[i].input_.cmd_ = C_BUTTON;
-  g_connect_links[i].input_.nr_ = 28;
-  g_connect_links[i].input_.state_ = S_LONG_PRESS;
-  g_connect_links[i].output_.cmd_ = C_RELAY;
-  g_connect_links[i].output_.nr_ = 4;
-  g_connect_links[i].output_.action_ = A_OFF;
-  i++;
-  g_connect_links[i].input_.cmd_ = C_BUTTON;
-  g_connect_links[i].input_.nr_ = 28;
-  g_connect_links[i].input_.state_ = S_LONG_PRESS;
-  g_connect_links[i].output_.cmd_ = C_RELAY;
-  g_connect_links[i].output_.nr_ = 5;
-  g_connect_links[i].output_.action_ = A_OFF;
-  i++;
-  g_connect_links[i].input_.cmd_ = C_BUTTON;
-  g_connect_links[i].input_.nr_ = 28;
-  g_connect_links[i].input_.state_ = S_LONG_PRESS;
-  g_connect_links[i].output_.cmd_ = C_RELAY;
-  g_connect_links[i].output_.nr_ = 6;
-  g_connect_links[i].output_.action_ = A_OFF;
+  ow_print_rom_name_table();
 }
 
 

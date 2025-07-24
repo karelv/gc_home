@@ -100,7 +100,7 @@ mqtt_reconnect_handler(void *)
         g_mqtt_client.subscribe(topic);
         // at every reconnect inform about all of relay states 
         sprintf(topic, "gc_home/relays/%03d/state", rel_nr);        
-        g_mqtt_client.publish(topic, rel_get_state(rel_nr, false) ? "ON" : "OFF");
+        g_mqtt_client.publish(topic, rel_get_state(rel_nr, false) ? "ON" : "OFF", true);
         // Serial.printf("MQTT: publish %s = %s\n", topic, rel_get_state(rel_nr, false) ? "ON" : "OFF");
       }
       for (uint8_t but_nr=0; but_nr<MAX_BUTTONS; but_nr++)
@@ -206,7 +206,7 @@ bool mqtt_publish_relay(uint16_t relay_nr, const char *state)
   sprintf(topic, "gc_home/relays/%03d/state", relay_nr);
   if (g_mqtt_client.connected())
   {
-    g_mqtt_client.publish(topic, state);
+    g_mqtt_client.publish(topic, state, true);
   }
   return true;
 }

@@ -36,7 +36,7 @@ jobs:
 
       - name: HEAT Convert one_wire_rom_names.md to bin
         run: |
-          python utils/convert_one_wire_rom_names.py to-bin cfg/heat/one_wire_rom_names.md build/cfg/home/one_wire_rom_names.bin
+          python utils/convert_one_wire_rom_names.py to-bin cfg/heat/one_wire_rom_names.md build/cfg/heat/one_wire_rom_names.bin
 
 
       - name: Upload zip artifact

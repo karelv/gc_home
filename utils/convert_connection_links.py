@@ -91,9 +91,9 @@ def to_bin(input_md, output_bin):
                 s_bytes = s_bytes.ljust(16, b'\x00')
                 fout.write(s_bytes)
             value = int(row[value_idx])
-            fout.write(struct.pack('<B', value))
+            fout.write(struct.pack('<i', value))
             # Pad to 64 bytes
-            pad_len = 64 - (16*3 + 1)
+            pad_len = 64 - (16*3 + 4)
             fout.write(b'\x00' * pad_len)
 
         # Write data_table records (each 64 bytes)
@@ -130,30 +130,30 @@ def to_bin(input_md, output_bin):
                     print(f"Invalid OUT Action: {out_action}")
                     sys.exit(1)
 
-            # Write 8 fields: 3 IN, 1 IN Value (int64), 3 OUT, 1 OUT Value (int64)
+            # Write 8 fields: 3 IN, 1 IN Value (int32), 3 OUT, 1 OUT Value (int32)
             record = bytearray()
             # IN fields
             for idx in (in_cmd_idx, in_state_idx, in_action_idx):
                 name = str(row[idx]).strip() if idx is not None else ''
                 val = value_map.get(name, 0)
                 record.append(val & 0xFF)
-            # IN Value (int64)
+            # IN Value (int32)
             if in_value_idx is not None:
                 in_val = int(row[in_value_idx])
-                record.extend(struct.pack('<B', in_val))
+                record.extend(struct.pack('<i', in_val))
             else:
-                record.extend(struct.pack('<B', 0))
+                record.extend(struct.pack('<i', 0))
             # OUT fields
             for idx in (out_cmd_idx, out_state_idx, out_action_idx):
                 name = str(row[idx]).strip() if idx is not None else ''
                 val = value_map.get(name, 0)
                 record.append(val & 0xFF)
-            # OUT Value (int64)
+            # OUT Value (int32)
             if out_value_idx is not None:
                 out_val = int(row[out_value_idx])
-                record.extend(struct.pack('<B', out_val))
+                record.extend(struct.pack('<i', out_val))
             else:
-                record.extend(struct.pack('<B', 0))
+                record.extend(struct.pack('<i', 0))
             # Pad record to 64 bytes
             if len(record) < 64:
                 record.extend(b'\x00' * (64 - len(record)))
@@ -180,7 +180,7 @@ def to_md(input_bin, output_md):
             cmd = vdata[0:16].split(b'\x00', 1)[0].decode('utf-8', errors='replace')
             state = vdata[16:32].split(b'\x00', 1)[0].decode('utf-8', errors='replace')
             action = vdata[32:48].split(b'\x00', 1)[0].decode('utf-8', errors='replace')
-            value = vdata[48]
+            value = struct.unpack('<i', vdata[48:52])[0]
             value_rows.append((cmd, state, action, value))
             cmd_dict[value] = cmd
             state_dict[value] = state
@@ -195,11 +195,11 @@ def to_md(input_bin, output_md):
             in_cmd = data[0]
             in_state = data[1]
             in_action = data[2]
-            in_value = data[3]
-            out_cmd = data[4]
-            out_state = data[5]
-            out_action = data[6]
-            out_value = data[7]
+            in_value = struct.unpack('<i', data[3:7])[0]
+            out_cmd = data[8]
+            out_state = data[9]
+            out_action = data[10]
+            out_value = struct.unpack('<i', data[11:15])[0]
             print(f"Read row: {in_cmd}, {in_state}, {in_action}, {in_value}, {out_cmd}, {out_state}, {out_action}, {out_value}")
             rows.append((in_cmd, in_state, in_action, in_value, out_cmd, out_state, out_action, out_value))
 

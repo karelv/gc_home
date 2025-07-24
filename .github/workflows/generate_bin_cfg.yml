@@ -24,7 +24,7 @@ jobs:
 
       - name: HOME Convert connection_links_button_relays.md to bin
         run: |
-          python utils/convert_connection_links.py to-bin cfg/home/connection_links_button_relays.md build/cfg/home/connection_links_button_relays.bin
+          python utils/convert_connection_links.py to-bin cfg/home/connection_links_button_relays.md build/cfg/home/connect_links.bin
 
       - name: HOME Convert one_wire_rom_names.md to bin
         run: |
@@ -32,7 +32,7 @@ jobs:
 
       - name: HEAT Convert connection_links_button_relays.md to bin
         run: |
-          python utils/convert_connection_links.py to-bin cfg/heat/connection_links_button_relays.md build/cfg/heat/connection_links_button_relays.bin
+          python utils/convert_connection_links.py to-bin cfg/heat/connection_links_button_relays.md build/cfg/heat/connect_links.bin
 
       - name: HEAT Convert one_wire_rom_names.md to bin
         run: |

@@ -169,11 +169,10 @@ setup()
 
   Serial.println("Core functions are life now!");
 
-  // todo: only copy SD/www when a button is pressed! (and also when no 'www' directory is available on little FS)
-  // todo: move it before reading the configuration files; but only when we read the button is pressed @ start up.  
-
+  Serial.println("Start temperature DS18b20");
+  ds18b20_init();
+  
   Serial.printf("Init ethernet/MQTT/Webserer\n");
-
 
   if (init_ethernet()) {
     Serial.println("Ethernet initialized, now MQTT...");
@@ -184,6 +183,7 @@ setup()
     uint8_t ret = web_service_begin();
     Serial.printf("%s\r\n", (ret) ? "Done." : "FAILED!");
   }
+
 
   
   ntp_begin();
@@ -218,8 +218,6 @@ setup()
   Serial.println("SCPI commands registration...");
   scpi_register_commands();
 
-  Serial.println("Start temperature DS18b20");
-  ds18b20_init();
   
   Serial.printf("Init finished!\n");
 }

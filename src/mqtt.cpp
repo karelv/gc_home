@@ -6,6 +6,7 @@
 #include "eth.h"
 #include "relay_button.h"
 #include "pins.h"
+#include "ow_rom_name.h"
 
 using namespace qindesign::network; // ethernet/MQTT/webserver
 
@@ -218,9 +219,15 @@ bool mqtt_publish_topic_value(const char *topic, const char *value)
 }
 
 
+void mqtt_publish_config() 
+{
+  mqtt_publish_relay_button_config();
+  mqtt_publish_sensor_config();
+}
 
 
-void mqtt_publish_config() {
+void mqtt_publish_relay_button_config() 
+{
     char topic[128], payload[512];
 
     // Relays as switches
@@ -267,4 +274,57 @@ void mqtt_publish_config() {
         );
         g_mqtt_client.publish(topic, payload, true);
     }
+}
+
+
+void mqtt_publish_sensor_config()
+{
+    char topic[256], payload[1024];
+    // Assume OW_MAX_SLAVES is defined and ow_get_name_by_index returns const char*
+    for (uint8_t idx = 0; idx < OW_MAX_SLAVES; idx++) {
+        const char* sensor_name = ow_get_name_by_index(idx);
+        if (!sensor_name || !*sensor_name) continue; // skip empty names
+        // Create a sanitized version of sensor_name for unique_id (replace non-alphanumeric with '-')
+        const char* sensor_name_sanitized = ow_get_sanitized_name_by_index(idx);
+        snprintf(topic, sizeof(topic), "homeassistant/sensor/gc_home_ds18b20_%s/config", sensor_name_sanitized);
+        snprintf(payload, sizeof(payload),
+            "{"
+            "\"name\": \"DS18B20 %s\","  // Friendly name
+            "\"unique_id\": \"gc_home_ds18b20_%s\","  // Unique ID (sanitized)
+            "\"state_topic\": \"gc_home/sensors/%s/value\","  // MQTT topic for value
+            "\"availability_topic\": \"gc_home/sensors/%s/status\","  // MQTT topic for availability
+            "\"payload_available\": \"online\","  // Payload for available
+            "\"payload_not_available\": \"offline\","  // Payload for not available
+            "\"device_class\": \"temperature\","  // Home Assistant device class
+            "\"unit_of_measurement\": \"°C\","  // Celsius
+            "\"device\": {"
+            "\"identifiers\": [\"gc_home\"],"
+            "\"name\": \"Golden Cherry Home: Main Board\","  // Device name
+            "\"model\": \"Golden Cherry Home: Main Board\","  // Model
+            "\"manufacturer\": \"Golden Cherry\""
+            "}"
+            "}",
+            sensor_name, sensor_name_sanitized, sensor_name_sanitized, sensor_name_sanitized
+        );
+        g_mqtt_client.publish(topic, payload, true);
+    }
+}
+
+
+void mqtt_publish_ds18b20_temperature_sensor(uint8_t *rom_id, float temperature, uint8_t valid)
+{
+  const char *sanitized_name = ow_get_sanitized_name_by_rom_bytes(rom_id);
+  if (sanitized_name && (sanitized_name[0] != '\0'))
+  {
+    char topic[128], value[32];
+
+    // Publish temperature value
+    snprintf(topic, sizeof(topic), "gc_home/sensors/%s/value", sanitized_name);
+    snprintf(value, sizeof(value), "%.3f", temperature);
+    g_mqtt_client.publish(topic, value, true);
+
+    // Publish availability status
+    snprintf(topic, sizeof(topic), "gc_home/sensors/%s/status", sanitized_name);
+    g_mqtt_client.publish(topic, valid ? "online" : "offline", true);
+  }
 }

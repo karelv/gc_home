@@ -1,6 +1,7 @@
 #include "DS2480b_event_loop.h"
 #include "ds18b20.h"
 #include "config.h"
+#include "mqtt.h"
 
 union ByteFloat 
 {
@@ -84,6 +85,8 @@ void DS2480b_call_back(DS2480bEventLoop *ow, DS2480bTaskData *data)
       temperature.bytes_[i] = data->buffer_[8+i];
     }    
     Serial.printf("Status %d | SA: %02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X: %f DegC\n", data->status_, data->buffer_[7], data->buffer_[6], data->buffer_[5], data->buffer_[4], data->buffer_[3], data->buffer_[2], data->buffer_[1], data->buffer_[0], temperature.float_);
+    mqtt_publish_ds18b20_temperature_sensor(data->buffer_, temperature.float_, true);
+
     g_ds18b20_sa_index++;
     if (g_ds18b20_sa_index < g_slave_address_index)
     { // ok, just read next slave

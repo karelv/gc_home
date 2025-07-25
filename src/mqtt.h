@@ -32,8 +32,10 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length);
 bool mqtt_publish_button_idle(void *button_nr);
 bool mqtt_publish_button(uint16_t button_nr, const char *state);
 bool mqtt_publish_relay(uint16_t relay_nr, const char *state);
+void mqtt_publish_ds18b20_temperature_sensor(uint8_t *rom_id, float temperature, uint8_t valid);
 bool mqtt_publish_topic_value(const char *topic, const char *value);
 void mqtt_publish_config();
-
+void mqtt_publish_relay_button_config();
+void mqtt_publish_sensor_config();
 
 #endif // __MQTT_H__

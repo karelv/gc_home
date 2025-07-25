@@ -73,6 +73,35 @@ const char *ow_get_name_by_index(uint8_t index) {
     return NULL;
 }
 
+const char *ow_get_sanitized_name_by_rom_id(uint64_t id) {
+    for (uint8_t i = 0; i < OW_MAX_SLAVES; ++i) {
+        if (g_rom_names[i].rom.id == id) {
+            return g_rom_names[i].sanitized_name;
+        }
+    }
+    return NULL;
+}
+
+const char *ow_get_sanitized_name_by_rom_bytes(uint8_t *bytes) {
+    ow_rom_t rom;
+    for (uint8_t i = 0; i < 8; ++i) {
+        rom.bytes[i] = bytes[i];
+    }
+    for (uint8_t i = 0; i < OW_MAX_SLAVES; ++i) {
+        if (g_rom_names[i].rom.id == rom.id) {
+            return g_rom_names[i].sanitized_name;
+        }
+    }
+    return NULL;
+}
+
+const char *ow_get_sanitized_name_by_index(uint8_t index) {
+    if (index < OW_MAX_SLAVES) {
+        return g_rom_names[index].sanitized_name;
+    }
+    return NULL;
+}
+
 void ow_empty_rom_name_table()
 {
   memset(g_rom_names, 0, sizeof(g_rom_names));
@@ -83,6 +112,15 @@ uint8_t ow_add_rom_name(const char *name, ow_rom_t rom)
     for (uint8_t i = 0; i < OW_MAX_SLAVES; ++i) {
         if (g_rom_names[i].name[0] == '\0') {
             strncpy(g_rom_names[i].name, name, sizeof(g_rom_names[i].name) - 1);
+            for (size_t j = 0; j < sizeof(g_rom_names[i].sanitized_name) - 1 && name[j]; ++j) {
+                char c = name[j];
+                if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9')) {
+                    g_rom_names[i].sanitized_name[j] = tolower(c);
+                } else {
+                    g_rom_names[i].sanitized_name[j] = '_';
+                }
+                g_rom_names[i].sanitized_name[j + 1] = '\0';
+            }
             g_rom_names[i].rom.id = rom.id;
             return 1;
         }

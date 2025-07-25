@@ -14,6 +14,7 @@ union ow_rom_t
 typedef struct {
     ow_rom_t rom;  /**< 64-bit ROM address of the sensor */
     char name[56]; /**< Name of the sensor */
+    char sanitized_name[56]; /**< sanitized name of the sensor */
 } ow_rom_name_t;
 
 
@@ -24,6 +25,10 @@ ow_rom_t ow_get_rom_by_name(const char *name);
 const char *ow_get_name_by_rom_id(uint64_t id);
 const char *ow_get_name_by_rom_bytes(uint8_t *bytes);
 const char *ow_get_name_by_index(uint8_t index);
+
+const char *ow_get_sanitized_name_by_rom_id(uint64_t id);
+const char *ow_get_sanitized_name_by_rom_bytes(uint8_t *bytes);
+const char *ow_get_sanitized_name_by_index(uint8_t index);
 
 void ow_empty_rom_name_table();
 uint8_t ow_add_rom_name(const char *name, ow_rom_t rom);

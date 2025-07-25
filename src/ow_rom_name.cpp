@@ -1,5 +1,6 @@
 #include <cstdio>
 
+#include <ctype.h>
 #include <string.h>
 #include <Arduino.h>
 
@@ -112,15 +113,16 @@ uint8_t ow_add_rom_name(const char *name, ow_rom_t rom)
     for (uint8_t i = 0; i < OW_MAX_SLAVES; ++i) {
         if (g_rom_names[i].name[0] == '\0') {
             strncpy(g_rom_names[i].name, name, sizeof(g_rom_names[i].name) - 1);
+            memset(g_rom_names[i].sanitized_name, 0, sizeof(g_rom_names[i].sanitized_name));
             for (size_t j = 0; j < sizeof(g_rom_names[i].sanitized_name) - 1 && name[j]; ++j) {
-                char c = name[j];
-                if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9')) {
+                unsigned char c = name[j];
+                if (isalnum(c)) {
                     g_rom_names[i].sanitized_name[j] = tolower(c);
                 } else {
                     g_rom_names[i].sanitized_name[j] = '_';
                 }
-                g_rom_names[i].sanitized_name[j + 1] = '\0';
             }
+            g_rom_names[i].sanitized_name[sizeof(g_rom_names[i].sanitized_name) - 1] = '\0';
             g_rom_names[i].rom.id = rom.id;
             return 1;
         }

@@ -286,6 +286,7 @@ void mqtt_publish_sensor_config()
         if (!sensor_name || !*sensor_name) continue; // skip empty names
         // Create a sanitized version of sensor_name for unique_id (replace non-alphanumeric with '-')
         const char* sensor_name_sanitized = ow_get_sanitized_name_by_index(idx);
+        if (!sensor_name_sanitized || !*sensor_name_sanitized) continue; // skip if sanitized name is null or empty
         snprintf(topic, sizeof(topic), "homeassistant/sensor/gc_home_ds18b20_%s/config", sensor_name_sanitized);
         snprintf(payload, sizeof(payload),
             "{"
@@ -314,7 +315,7 @@ void mqtt_publish_sensor_config()
 void mqtt_publish_ds18b20_temperature_sensor(uint8_t *rom_id, float temperature, uint8_t valid)
 {
   const char *sanitized_name = ow_get_sanitized_name_by_rom_bytes(rom_id);
-  if (sanitized_name && (sanitized_name[0] != '\0'))
+  if (sanitized_name && sanitized_name[0])
   {
     char topic[128], value[32];
 

@@ -1,14 +1,19 @@
 #include <Wire.h>
 #include <Arduino.h>
+#include <ModbusMaster.h>
 
 // SCPI configuration
-#define SCPI_MAX_TOKENS 32
-#define SCPI_MAX_COMMANDS 32
+#define SCPI_MAX_TOKENS 64
+#define SCPI_MAX_COMMANDS 64
 #include <Vrekrer_scpi_parser.h>
 // end SCPI configuration
 
 #include "pins.h"
 
+#define RELAY_COUNT 8
+#define MODBUS_SLAVE_ID 1      // Set to your module's address
+#define MODBUS_BAUDRATE 9600   // Set to your module's baudrate
+#define MODBUS_SERIAL Serial1  // Use Serial1 for RS485 (adjust as needed)
 
 // I2C IO Expander address (example: PCF8574 default address: 0x20)
 #define IOEXPANDER_ADDR 0x20
@@ -16,6 +21,7 @@
 #define IOEXPANDER_ADDR3 0x20
 
 SCPI_Parser scpi;
+ModbusMaster node;
 
 
 void scpi_test_dsrm_data_request(SCPI_Commands cmd, SCPI_Parameters params, Stream& interface) {
@@ -342,6 +348,81 @@ void scpi_test_can_txd_res(SCPI_Commands cmd, SCPI_Parameters params, Stream& in
 }
 
 
+void scpi_test_rs485_rxd(SCPI_Commands cmd, SCPI_Parameters params, Stream& interface)
+{
+  interface.println("Starting RS485 test");
+  interface.println("Remark: it needs AC input power! (110V AC or 230V AC, 50 or 60Hz)");
+  interface.println("Remark: run twice; once without anything on the RS485 bus ==> expect RS485_RxD state 1");
+  interface.println("Remark: and once with a one 120 Ohm resistor from RS485_L to GND and another 120 Ohm resistor from RS485_H to +5V");
+  interface.println("      ==> expect RS485_RxD state 0");
+  // Enable AC power
+  digitalWrite(PIN_ENABLE_POWER, HIGH);
+  interface.println("AC Power ON");
+  // Set RS485_DE low
+  pinMode(PIN_RS485_DE, OUTPUT);
+  digitalWrite(PIN_RS485_DE, LOW);
+  interface.println("RS485_DE set LOW");
+  // Force RS485_TXD low
+  pinMode(PIN_RS485_TxD, OUTPUT);
+  digitalWrite(PIN_RS485_TxD, HIGH);
+  interface.println("RS485_TxD set HIGH");
+  // Print RS485_RXD state
+  pinMode(PIN_RS485_RxD, INPUT);
+  int rx_state = digitalRead(PIN_RS485_RxD);
+  interface.printf("RS485_RxD state: %d\n", rx_state);
+  interface.println("End of RS485 RxD test");
+}
+
+
+void scpi_test_rs485_txd_0(SCPI_Commands cmd, SCPI_Parameters params, Stream& interface)
+{
+  interface.println("Starting RS485 output test");
+  interface.println("Remark: it needs AC input power! (110V AC or 230V AC, 50 or 60Hz)");
+  interface.println("Remark: make sure there is no external RS485 bus connection during this test");
+  interface.println("Remark: this test will toggle RS485_TXD for 1 second, then set it high for 1 second");
+  interface.println("Remark: measure RS485_H-RS485_L with a multimeter to see the voltage levels");
+  interface.println("Remark: Test is not working, measure at pin1 of U2");
+
+  // Enable AC power
+  digitalWrite(PIN_ENABLE_POWER, HIGH);
+  interface.println("AC Power ON");
+  // Set RS485_DE low
+  pinMode(PIN_RS485_DE, OUTPUT);
+  digitalWrite(PIN_RS485_DE, HIGH);
+  interface.println("RS485_DE set HIGH");
+  pinMode(PIN_RS485_TxD, OUTPUT);
+  // Set RS485_TXD high for 1 second
+  digitalWrite(PIN_RS485_TxD, LOW);
+  interface.println("RS485_TxD set LOW (measure between A&B)");
+  delay(1000);
+  interface.println("End of RS485 output test");
+}
+
+void scpi_test_rs485_txd_1(SCPI_Commands cmd, SCPI_Parameters params, Stream& interface)
+{
+  interface.println("Starting RS485 output test");
+  interface.println("Remark: it needs AC input power! (110V AC or 230V AC, 50 or 60Hz)");
+  interface.println("Remark: make sure there is no external RS485 bus connection during this test");
+  interface.println("Remark: this test will toggle RS485_TXD for 1 second, then set it high for 1 second");
+  interface.println("Remark: measure RS485_H-RS485_L with a multimeter to see the voltage levels");
+  interface.println("Remark: Test is not working, measure at pin1 of U2");
+
+  // Enable AC power
+  digitalWrite(PIN_ENABLE_POWER, HIGH);
+  interface.println("AC Power ON");
+  // Set RS485_DE low
+  pinMode(PIN_RS485_DE, OUTPUT);
+  digitalWrite(PIN_RS485_DE, HIGH);
+  interface.println("RS485_DE set HIGH");
+  pinMode(PIN_RS485_TxD, OUTPUT);
+  // Set RS485_TXD high for 1 second
+  digitalWrite(PIN_RS485_TxD, HIGH);
+  interface.println("RS485_TxD set HIGH (measure between A&B)");
+  delay(1000);
+  interface.println("End of RS485 output test");
+}
+
+
 void scpi_test_lin_control(SCPI_Commands cmd, SCPI_Parameters params, Stream& interface) {
   interface.println("Starting LIN test");
   interface.println("Remark: it needs AC input power! (110V AC or 230V AC, 50 or 60Hz)");
@@ -416,6 +497,42 @@ void scpi_test_1w_txd(SCPI_Commands cmd, SCPI_Parameters params, Stream& interfa
 }
 
 
+void preTransmission() {
+  digitalWrite(PIN_RS485_DE, HIGH); // Enable RS485 transmit (set your DE/RE pin)
+}
+
+void postTransmission() {
+  digitalWrite(PIN_RS485_DE, LOW); // Disable RS485 transmit
+}
+
+
+void scpi_test_rs485_eletechsup(SCPI_Commands cmd, SCPI_Parameters params, Stream& interface) 
+{
+  interface.println("RS485 test where a running 1 is expected on the relay module.");
+  interface.println("Remark: it needs AC input power! (110V AC or 230V AC, 50 or 60Hz)");
+
+  digitalWrite(PIN_ENABLE_POWER, HIGH); // Turn on AC power
+  delay(1000); // Wait for power to stabilize
+
+  pinMode(PIN_RS485_DE, OUTPUT);
+  digitalWrite(PIN_RS485_DE, LOW);
+
+  MODBUS_SERIAL.begin(MODBUS_BAUDRATE);
+  node.begin(MODBUS_SLAVE_ID, MODBUS_SERIAL);
+  node.preTransmission(preTransmission);
+  node.postTransmission(postTransmission);
+
+  for (uint8_t i = 0; i < RELAY_COUNT; i++) {
+    Serial.printf("Setting relay %d ON\n", i+1);
+    node.writeSingleRegister(i+1, 0x0100);
+    delay(500);
+    node.writeSingleRegister(i+1, 0x0200);
+    delay(200); // do not write too fast after previous command...
+  }
+}
+
+
+
 void scpi_handle_serial() 
 {
   static char buffer[64];
@@ -464,6 +581,10 @@ void scpi_register_commands()
   scpi.RegisterCommand("TEST:CAN:RXD", scpi_test_can_rxd);
   scpi.RegisterCommand("TEST:CAN:TXD:DOM", scpi_test_can_txd_dom);
   scpi.RegisterCommand("TEST:CAN:TXD:RES", scpi_test_can_txd_res);
+  scpi.RegisterCommand("TEST:RS485:RXD", scpi_test_rs485_rxd);
+  scpi.RegisterCommand("TEST:RS485:TXD:HIGH", scpi_test_rs485_txd_1);
+  scpi.RegisterCommand("TEST:RS485:TXD:LOW", scpi_test_rs485_txd_0);
+  scpi.RegisterCommand("TEST:RS485:ELTECHSUP", scpi_test_rs485_eletechsup);
   scpi.RegisterCommand("TEST:LIN:CONTROL", scpi_test_lin_control);
   scpi.RegisterCommand("TEST:LIN:RXD", scpi_test_lin_rxd);
   scpi.RegisterCommand("TEST:LIN:TXD", scpi_test_lin_txd);

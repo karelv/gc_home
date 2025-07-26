@@ -8,3 +8,4 @@ sd/config_new.json
 sd/config_ori.json
 *.exe
 utils/**/*.bin
+*.bak

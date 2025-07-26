@@ -30,10 +30,13 @@
 #define PIN_LIN_RxD 7
 
 
-// CAN
+// CAN / RS485
 #define PIN_CAN_RS 32
 #define PIN_CAN_TxD 31
 #define PIN_CAN_RxD 30
+#define PIN_RS485_DE PIN_CAN_RS
+#define PIN_RS485_TxD 1
+#define PIN_RS485_RxD 0
 
 // One Wire
 #define PIN_1W_TxD 29

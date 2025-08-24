@@ -5,7 +5,7 @@
 
 #include <stdint.h>
 
-const IPAddress MQTT_SERVER_IP{192, 168, 68, 54};
+const IPAddress MQTT_SERVER_IP{192, 168, 68, 110};
 #define MQTT_SERVER_PORT 1883
 // #define MQTT_USER "mqtt_client10"
 // #define MQTT_PWD "bdSN32HBagV62sClientGippershoven"

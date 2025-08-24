@@ -11,8 +11,8 @@
 constexpr uint32_t ETH_LINK_TIMEOUT = 0;//5'000;  // 5 seconds
 
 // Set the static IP to something other than INADDR_NONE (all zeros)
-#define TEENSY_NAME "teensy41_3"
-const IPAddress TEENSY_STATIC_IP{192, 168, 68, 113}; // was 11
+#define TEENSY_NAME "gc-home"
+const IPAddress TEENSY_STATIC_IP{192, 168, 68, 120}; // was 11
 const IPAddress SUBNETMASK{255, 255, 255, 0};
 const IPAddress GATEWAY{192, 168, 68, 1};
 

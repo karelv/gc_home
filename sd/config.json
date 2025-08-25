@@ -1,6 +1,6 @@
 {
   "slave_addresses": {
-    "input": [98, 99, 114, 115],
+    "input": [80, 81, 82, 83, 88, 89, 90, 91],
     "output": [32, 33, 40, 41]
   },
   "i2c_input_boards": [

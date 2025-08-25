@@ -13,3 +13,4 @@ There is a maximum of 32 rom-ids.
 | 8D-00-00-00-32-19-5C-28 | Sensor 006 | 314: Badkamer                     |
 | 07-00-00-00-30-FA-0D-28 | Sensor 007 | 312: Slaapkamer 1                 |
 
+

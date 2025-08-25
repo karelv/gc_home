@@ -153,12 +153,12 @@ setup()
   g_timer_ms.every(5'001, mqtt_reconnect_handler); // every 5 sec check for reconnect to MQTT
 
   // g_timer_ms.every(5'002, handle_reconnect_sd); // every 5 sec check for reconnect to SD
-  g_timer_ms.every(20'002, print_datetime); // every 2 sec print the time
+  g_timer_ms.every(20'002, print_datetime); // every 20 sec print the time
 
-  //g_timer_ms.every(120'000, ntp_app_timer);  // every 2 minutes
-  g_timer_ms.every(1000, ntp_app_timer);  // every 2 minutes
+  g_timer_ms.every(120'000, ntp_app_timer);  // every 2 minutes
+  // g_timer_ms.every(1000, ntp_app_timer);  // every 2 minutes
 
-  g_timer_ms.every(3'000, ds18b20_timer); // every 30 seconds start a new temperature measurement
+  g_timer_ms.every(60'001, ds18b20_timer); // every 60 seconds start a new temperature measurement
 
   g_timer_ms.every(200, ntp_app_LED);  // every 200ms update the status
 
@@ -187,7 +187,7 @@ setup()
 
   
   ntp_begin();
-  // rtc15_set_active_timezone(rtc_CE); // set the timezone to Belgium
+  rtc15_set_active_timezone(rtc_CE); // set the timezone to Belgium
   ntp_app_begin();
   //ntp_app_trigger_synch(); // no trigger, 
   // it will be triggered by the cron job automatically

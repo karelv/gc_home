@@ -273,6 +273,7 @@ void mqtt_publish_relay_button_config()
             , but_nr, but_nr, but_nr
         );
         g_mqtt_client.publish(topic, payload, true);
+        delay(30);
     }
 }
 
@@ -308,6 +309,7 @@ void mqtt_publish_sensor_config()
             sensor_name, sensor_name_sanitized, sensor_name_sanitized, sensor_name_sanitized
         );
         g_mqtt_client.publish(topic, payload, true);
+        delay(30);
     }
 }
 

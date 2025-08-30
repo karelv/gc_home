@@ -17,3 +17,4 @@ There is a maximum of 32 rom-ids.
 | E0-24-01-00-00-7A-C1-28 | Sensor 010 | 222: Inkom WC                     |
 | F9-24-01-00-00-93-70-28 | Sensor 011 | 217: Inkom Voordeur               |
 | DB-24-01-00-00-70-50-28 | Sensor 012 | 218: Berging - Keuken             |
+| 7F-00-00-00-32-13-F2-28 | Sensor 013 | n/a: Garage elek kast             |
